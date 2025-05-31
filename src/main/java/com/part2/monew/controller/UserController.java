@@ -1,6 +1,7 @@
 package com.part2.monew.controller;
 
 import com.part2.monew.dto.request.UserCreateRequest;
+import com.part2.monew.dto.request.UserInfoRequest;
 import com.part2.monew.dto.response.UserResponse;
 import com.part2.monew.entity.User;
 import com.part2.monew.service.UserService;
@@ -17,6 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+
+    @PostMapping("/validate")
+    public ResponseEntity<Void> validateUserInfo(@RequestBody @Valid UserInfoRequest request){
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("")
     public ResponseEntity<UserResponse> create(@RequestBody @Valid UserCreateRequest request) {
