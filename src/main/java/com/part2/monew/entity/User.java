@@ -1,7 +1,9 @@
 package com.part2.monew.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
@@ -12,6 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="users")
 public class User {
     @Id
@@ -53,4 +56,11 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Notification> notification;
 
+    public User(String username, String email, String password, boolean active, Timestamp createdAt) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.active = active;
+        this.createdAt = createdAt;
+    }
 }
