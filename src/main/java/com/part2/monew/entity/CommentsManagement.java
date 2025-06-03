@@ -33,7 +33,7 @@ public class CommentsManagement {
     private String content;
 
     @Column(name = "like_count")
-    private int likeCount;
+    private Long likeCount;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -48,7 +48,7 @@ public class CommentsManagement {
 
 
     @Builder
-    private CommentsManagement(UUID id, User user, NewsArticle newsArticle, String content, int likeCount, Timestamp createdAt) {
+    private CommentsManagement(UUID id, User user, NewsArticle newsArticle, String content, Long likeCount, Timestamp createdAt) {
         this.id = id;
         this.user = user;
         this.newsArticle = newsArticle;
@@ -57,7 +57,7 @@ public class CommentsManagement {
         this.createdAt = createdAt;
     }
 
-    public static CommentsManagement create(User user, NewsArticle newsArticle, String content, int likeCount) {
+    public static CommentsManagement create(User user, NewsArticle newsArticle, String content, Long likeCount) {
         return CommentsManagement.builder()
                 .user(user)
                 .newsArticle(newsArticle)
@@ -66,7 +66,7 @@ public class CommentsManagement {
                 .build();
     }
 
-    public static CommentsManagement create(User user, NewsArticle newsArticle, String content, int likeCount, Timestamp createAt) {
+    public static CommentsManagement create(User user, NewsArticle newsArticle, String content, Long likeCount, Timestamp createAt) {
         CommentsManagement cm = CommentsManagement.builder()
                 .user(user)
                 .newsArticle(newsArticle)
@@ -79,5 +79,9 @@ public class CommentsManagement {
 
     public void update(String content) {
         this.content = content;
+    }
+
+    public void updateTotalCount(Long likeCount) {
+        this.likeCount = likeCount;
     }
 }

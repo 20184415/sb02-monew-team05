@@ -15,12 +15,12 @@ public class CommentResponse {
     private UUID userId;
     private String userNickname;
     private String content;
-    private int likeCount;
+    private Long likeCount;
     private Boolean likedByMe;
     private Timestamp createdAt;
 
     @Builder
-    private CommentResponse(UUID id, UUID articleId, UUID userId, String userNickname, String content, int likeCount, boolean likedByMe, Timestamp createdAt) {
+    private CommentResponse(UUID id, UUID articleId, UUID userId, String userNickname, String content, Long likeCount, boolean likedByMe, Timestamp createdAt) {
         this.id = id;
         this.articleId = articleId;
         this.userId = userId;

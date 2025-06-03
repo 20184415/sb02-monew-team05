@@ -3,6 +3,7 @@ package com.part2.monew.controller;
 import com.part2.monew.dto.request.CommentRequest;
 import com.part2.monew.dto.request.CreateCommentRequest;
 import com.part2.monew.dto.request.UpdateCommentRequest;
+import com.part2.monew.dto.response.CommentLikeReponse;
 import com.part2.monew.dto.response.CommentResponse;
 import com.part2.monew.dto.response.CursorResponse;
 import com.part2.monew.service.CommentService;
@@ -43,4 +44,14 @@ public class CommentController {
     ){
         return ResponseEntity.status(HttpStatus.OK).body(commentService.update(commentId, request.getContent()));
     }
+
+    @PostMapping("/{commentId}/comment-likes")
+    public ResponseEntity<CommentLikeReponse> addCommentLikes(
+            @PathVariable("commentId") UUID commentId,
+            @RequestHeader("Monew-Request-User-ID") UUID userId
+    ){
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.likeComment(commentId, userId));
+    }
+
+
 }
