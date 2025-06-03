@@ -41,12 +41,12 @@ class CommentServiceIntegrationTest {
         NewsArticle article = new NewsArticle("https://foo.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
         em.persist(article);
 
-        em.persist(CommentsManagement.create(user, article, "내용1", 0L, Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS))));
-        em.persist(CommentsManagement.create(user, article, "내용2", 0L, Timestamp.from(Instant.now().plus(2, ChronoUnit.DAYS))));
-        em.persist(CommentsManagement.create(user, article, "내용3", 0L, Timestamp.from(Instant.now().plus(3, ChronoUnit.DAYS))));
-        em.persist(CommentsManagement.create(user, article, "내용4", 0L, Timestamp.from(Instant.now().plus(4, ChronoUnit.DAYS))));
-        em.persist(CommentsManagement.create(user, article, "내용5", 0L, Timestamp.from(Instant.now().plus(5, ChronoUnit.DAYS))));
-        em.persist(CommentsManagement.create(user, article, "내용6", 0L, Timestamp.from(Instant.now().plus(6, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용1", 0, Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용2", 0, Timestamp.from(Instant.now().plus(2, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용3", 0, Timestamp.from(Instant.now().plus(3, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용4", 0, Timestamp.from(Instant.now().plus(4, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용5", 0, Timestamp.from(Instant.now().plus(5, ChronoUnit.DAYS))));
+        em.persist(CommentsManagement.create(user, article, "내용6", 0, Timestamp.from(Instant.now().plus(6, ChronoUnit.DAYS))));
 
         em.flush();
         em.clear();

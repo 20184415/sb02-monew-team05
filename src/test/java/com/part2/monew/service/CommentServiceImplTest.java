@@ -52,12 +52,12 @@ class CommentServiceImplTest {
 
         Instant baseTime = Instant.parse("2025-06-01T00:00:00Z");
 
-        CommentsManagement cm1 = CommentsManagement.create(user, article, "내용1", 0L, Timestamp.from(baseTime.plus(1, ChronoUnit.HOURS)));
-        CommentsManagement cm2 = CommentsManagement.create(user, article, "내용2", 0L, Timestamp.from(baseTime.plus(2, ChronoUnit.HOURS)));
-        CommentsManagement cm3 = CommentsManagement.create(user, article, "내용3", 0L, Timestamp.from(baseTime.plus(3, ChronoUnit.HOURS)));
-        CommentsManagement cm4 = CommentsManagement.create(user, article, "내용4", 0L, Timestamp.from(baseTime.plus(4, ChronoUnit.HOURS)));
-        CommentsManagement cm5 = CommentsManagement.create(user, article, "내용5", 0L, Timestamp.from(baseTime.plus(5, ChronoUnit.HOURS)));
-        CommentsManagement cm6 = CommentsManagement.create(user, article, "내용6", 0L, Timestamp.from(baseTime.plus(6, ChronoUnit.HOURS)));
+        CommentsManagement cm1 = CommentsManagement.create(user, article, "내용1", 0, Timestamp.from(baseTime.plus(1, ChronoUnit.HOURS)));
+        CommentsManagement cm2 = CommentsManagement.create(user, article, "내용2", 0, Timestamp.from(baseTime.plus(2, ChronoUnit.HOURS)));
+        CommentsManagement cm3 = CommentsManagement.create(user, article, "내용3", 0, Timestamp.from(baseTime.plus(3, ChronoUnit.HOURS)));
+        CommentsManagement cm4 = CommentsManagement.create(user, article, "내용4", 0, Timestamp.from(baseTime.plus(4, ChronoUnit.HOURS)));
+        CommentsManagement cm5 = CommentsManagement.create(user, article, "내용5", 0, Timestamp.from(baseTime.plus(5, ChronoUnit.HOURS)));
+        CommentsManagement cm6 = CommentsManagement.create(user, article, "내용6", 0, Timestamp.from(baseTime.plus(6, ChronoUnit.HOURS)));
 
         em.persist(cm1);
         em.persist(cm2);
@@ -110,7 +110,7 @@ class CommentServiceImplTest {
 
         assertThat(fetched)
                 .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
-                .containsExactly(user.getId(), article.getId(), "내용", 0L, true);
+                .containsExactly(user.getId(), article.getId(), "내용", 0, true);
 
     }
 
@@ -161,7 +161,7 @@ class CommentServiceImplTest {
 
         assertThat(fetched)
                 .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
-                .containsExactly(user.getId(), article.getId(), "새로운 내용", 0L, true);
+                .containsExactly(user.getId(), article.getId(), "새로운 내용", 0, true);
 
 
     }
@@ -178,7 +178,7 @@ class CommentServiceImplTest {
         NewsArticle article = new NewsArticle("http://url.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
         em.persist(article);
 
-        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0L);
+        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0);
 
         commentRepository.save(comment);
 
@@ -207,7 +207,7 @@ class CommentServiceImplTest {
                         comment.getUser().getId(),
                         comment.getUser().getUsername(),
                         comment.getContent(),
-                        1L,
+                        1,
                         comment.getCreatedAt());
     }
 
@@ -222,7 +222,7 @@ class CommentServiceImplTest {
         NewsArticle article = new NewsArticle("http://url.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
         em.persist(article);
 
-        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0L);
+        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0);
 
         commentRepository.save(comment);
 
@@ -231,7 +231,60 @@ class CommentServiceImplTest {
         // when then
         assertThatThrownBy(() -> commentService.likeComment(comment.getId(), user.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("좋아요를 이미 눌렀습니다.");
+                .hasMessage("이미 좋아요를 눌렀습니다.");
+
+    }
+
+
+    @DisplayName("댓글에 좋아요를 한번더 누른다.")
+    @Test
+    @Transactional
+    void unlikeComment() {
+        // given
+        User user = new User("tester", "test@example.com", "pass123", true, Timestamp.from(Instant.now()));
+        em.persist(user);
+
+        NewsArticle article = new NewsArticle("http://url.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
+        em.persist(article);
+
+        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0);
+
+        commentRepository.save(comment);
+
+        CommentLikeReponse response = commentService.likeComment(comment.getId(), user.getId());
+
+        // when
+        commentService.unlikeComment(comment.getId(), user.getId());
+        em.flush();
+        em.clear();
+
+        // then
+        CommentsManagement updated = commentRepository.findById(comment.getId())
+                .orElseThrow(() -> new AssertionError("댓글이 DB에 존재하지 않습니다."));
+
+        assertThat(updated.getLikeCount()).isEqualTo(0);
+    }
+
+
+    @DisplayName("댓글 좋아요 취소가 중복 호출되면 예외가 발생한다.")
+    @Test
+    @Transactional
+    void unlikeDuplicatonComment() {
+        // given
+        User user = new User("tester", "test@example.com", "pass123", true, Timestamp.from(Instant.now()));
+        em.persist(user);
+
+        NewsArticle article = new NewsArticle("http://url.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
+        em.persist(article);
+
+        CommentsManagement comment = CommentsManagement.create(user, article, "댓글", 0);
+
+        commentRepository.save(comment);
+
+        // when then
+        assertThatThrownBy(() -> commentService.unlikeComment(comment.getId(), user.getId()))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("좋아요 취소를 이미 눌렀습니다.");
 
     }
 }

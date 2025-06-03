@@ -39,16 +39,16 @@ class CommentRepositoryTest {
 
         Instant baseTime = Instant.parse("2025-06-01T00:00:00Z");
 
-        CommentsManagement cm1 = CommentsManagement.create(user, newsArticle, "Content1", 0L, Timestamp.from(baseTime.plus(0, ChronoUnit.DAYS)));
-        CommentsManagement cm2 = CommentsManagement.create(user, newsArticle, "Content2", 0L, Timestamp.from(baseTime.plus(1, ChronoUnit.DAYS)));
-        CommentsManagement cm3 = CommentsManagement.create(user, newsArticle, "Content3", 0L, Timestamp.from(baseTime.plus(2, ChronoUnit.DAYS)));
-        CommentsManagement cm4 = CommentsManagement.create(user, newsArticle, "Content4", 0L, Timestamp.from(baseTime.plus(3, ChronoUnit.DAYS)));
-        CommentsManagement cm5 = CommentsManagement.create(user, newsArticle, "Content5", 0L, Timestamp.from(baseTime.plus(4, ChronoUnit.DAYS)));
-        CommentsManagement cm6 = CommentsManagement.create(user, newsArticle, "Content6", 0L, Timestamp.from(baseTime.plus(5, ChronoUnit.DAYS)));
-        CommentsManagement cm7 = CommentsManagement.create(user, newsArticle, "Content7", 0L, Timestamp.from(baseTime.plus(6, ChronoUnit.DAYS)));
-        CommentsManagement cm8 = CommentsManagement.create(user, newsArticle, "Content8", 0L, Timestamp.from(baseTime.plus(7, ChronoUnit.DAYS)));
-        CommentsManagement cm9 = CommentsManagement.create(user, newsArticle, "Content9", 0L, Timestamp.from(baseTime.plus(8, ChronoUnit.DAYS)));
-        CommentsManagement cm10 = CommentsManagement.create(user, newsArticle, "Content10", 0L, Timestamp.from(baseTime.plus(9, ChronoUnit.DAYS)));
+        CommentsManagement cm1 = CommentsManagement.create(user, newsArticle, "Content1", 0, Timestamp.from(baseTime.plus(0, ChronoUnit.DAYS)));
+        CommentsManagement cm2 = CommentsManagement.create(user, newsArticle, "Content2", 0, Timestamp.from(baseTime.plus(1, ChronoUnit.DAYS)));
+        CommentsManagement cm3 = CommentsManagement.create(user, newsArticle, "Content3", 0, Timestamp.from(baseTime.plus(2, ChronoUnit.DAYS)));
+        CommentsManagement cm4 = CommentsManagement.create(user, newsArticle, "Content4", 0, Timestamp.from(baseTime.plus(3, ChronoUnit.DAYS)));
+        CommentsManagement cm5 = CommentsManagement.create(user, newsArticle, "Content5", 0, Timestamp.from(baseTime.plus(4, ChronoUnit.DAYS)));
+        CommentsManagement cm6 = CommentsManagement.create(user, newsArticle, "Content6", 0, Timestamp.from(baseTime.plus(5, ChronoUnit.DAYS)));
+        CommentsManagement cm7 = CommentsManagement.create(user, newsArticle, "Content7", 0, Timestamp.from(baseTime.plus(6, ChronoUnit.DAYS)));
+        CommentsManagement cm8 = CommentsManagement.create(user, newsArticle, "Content8", 0, Timestamp.from(baseTime.plus(7, ChronoUnit.DAYS)));
+        CommentsManagement cm9 = CommentsManagement.create(user, newsArticle, "Content9", 0, Timestamp.from(baseTime.plus(8, ChronoUnit.DAYS)));
+        CommentsManagement cm10 = CommentsManagement.create(user, newsArticle, "Content10", 0, Timestamp.from(baseTime.plus(9, ChronoUnit.DAYS)));
 
         em.persist(cm1);
         em.persist(cm2);
@@ -96,16 +96,16 @@ class CommentRepositoryTest {
         Timestamp checkTime = Timestamp.from(baseTime);
         Timestamp afterTime = Timestamp.from(baseTime.plus(5, ChronoUnit.DAYS)); // Content6 시간
 
-        CommentsManagement cm1 = CommentsManagement.create(user, newsArticle, "Content1", 0L, checkTime);
-        CommentsManagement cm2 = CommentsManagement.create(user, newsArticle, "Content2", 0L, Timestamp.from(baseTime.plus(1, ChronoUnit.DAYS)));
-        CommentsManagement cm3 = CommentsManagement.create(user, newsArticle, "Content3", 0L, Timestamp.from(baseTime.plus(2, ChronoUnit.DAYS)));
-        CommentsManagement cm4 = CommentsManagement.create(user, newsArticle, "Content4", 0L, Timestamp.from(baseTime.plus(3, ChronoUnit.DAYS)));
-        CommentsManagement cm5 = CommentsManagement.create(user, newsArticle, "Content5", 0L, Timestamp.from(baseTime.plus(4, ChronoUnit.DAYS)));
-        CommentsManagement cm6 = CommentsManagement.create(user, newsArticle, "Content6", 0L, afterTime);
-        CommentsManagement cm7 = CommentsManagement.create(user, newsArticle, "Content7", 0L, Timestamp.from(baseTime.plus(6, ChronoUnit.DAYS)));
-        CommentsManagement cm8 = CommentsManagement.create(user, newsArticle, "Content8", 0L, Timestamp.from(baseTime.plus(7, ChronoUnit.DAYS)));
-        CommentsManagement cm9 = CommentsManagement.create(user, newsArticle, "Content9", 0L, Timestamp.from(baseTime.plus(8, ChronoUnit.DAYS)));
-        CommentsManagement cm10 = CommentsManagement.create(user, newsArticle, "Content10", 0L, Timestamp.from(baseTime.plus(9, ChronoUnit.DAYS)));
+        CommentsManagement cm1 = CommentsManagement.create(user, newsArticle, "Content1", 0, checkTime);
+        CommentsManagement cm2 = CommentsManagement.create(user, newsArticle, "Content2", 0, Timestamp.from(baseTime.plus(1, ChronoUnit.DAYS)));
+        CommentsManagement cm3 = CommentsManagement.create(user, newsArticle, "Content3", 0, Timestamp.from(baseTime.plus(2, ChronoUnit.DAYS)));
+        CommentsManagement cm4 = CommentsManagement.create(user, newsArticle, "Content4", 0, Timestamp.from(baseTime.plus(3, ChronoUnit.DAYS)));
+        CommentsManagement cm5 = CommentsManagement.create(user, newsArticle, "Content5", 0, Timestamp.from(baseTime.plus(4, ChronoUnit.DAYS)));
+        CommentsManagement cm6 = CommentsManagement.create(user, newsArticle, "Content6", 0, afterTime);
+        CommentsManagement cm7 = CommentsManagement.create(user, newsArticle, "Content7", 0, Timestamp.from(baseTime.plus(6, ChronoUnit.DAYS)));
+        CommentsManagement cm8 = CommentsManagement.create(user, newsArticle, "Content8", 0, Timestamp.from(baseTime.plus(7, ChronoUnit.DAYS)));
+        CommentsManagement cm9 = CommentsManagement.create(user, newsArticle, "Content9", 0, Timestamp.from(baseTime.plus(8, ChronoUnit.DAYS)));
+        CommentsManagement cm10 = CommentsManagement.create(user, newsArticle, "Content10", 0, Timestamp.from(baseTime.plus(9, ChronoUnit.DAYS)));
 
         em.persist(cm1);
         em.persist(cm2);
@@ -151,7 +151,7 @@ class CommentRepositoryTest {
         );
         em.persist(article);
 
-        CommentsManagement comment = CommentsManagement.create(user, article, "내용", 0L);
+        CommentsManagement comment = CommentsManagement.create(user, article, "내용", 0);
 
         // when
         CommentsManagement saved = commentRepository.save(comment);

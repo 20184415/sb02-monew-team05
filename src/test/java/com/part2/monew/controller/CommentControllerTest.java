@@ -98,7 +98,7 @@ class CommentControllerTest {
                 .userNickname("tester")
                 .articleId(UUID.randomUUID())
                 .content(content)
-                .likeCount(0L)
+                .likeCount(0)
                 .likedByMe(false)
                 .createdAt(Timestamp.from(Instant.now()))
                 .build();
@@ -132,7 +132,7 @@ class CommentControllerTest {
                 .commentUserId(UUID.randomUUID())            // 댓글 작성자 ID
                 .commentUserNickname("tester")               // 댓글 작성자 닉네임
                 .content("댓글 내용")                         // 댓글 본문
-                .likeCount(5L)                               // 최종 좋아요 개수
+                .likeCount(5)                               // 최종 좋아요 개수
                 .commentCreatedAt(Timestamp.from(Instant.now().minusSeconds(3600)))
                 .build();
 
@@ -152,7 +152,6 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.commentId").value(commentId.toString()))
                 .andExpect(jsonPath("$.likeCount").value((int) (long) fakeResponse.getLikeCount()))
                 .andExpect(jsonPath("$.commentUserNickname").value("tester"))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        ;
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 }
