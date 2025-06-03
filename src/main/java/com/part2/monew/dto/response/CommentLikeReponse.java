@@ -27,12 +27,12 @@ public class CommentLikeReponse {
 
     private String content;
 
-    private Long LikeCount;
+    private int LikeCount;
 
     private Timestamp commentCreatedAt;
 
     @Builder
-    private CommentLikeReponse(UUID id, UUID likeBy, Timestamp createdAt, UUID commentId, UUID articleId, UUID commentUserId, String commentUserNickname, String content, Long likeCount, Timestamp commentCreatedAt) {
+    private CommentLikeReponse(UUID id, UUID likeBy, Timestamp createdAt, UUID commentId, UUID articleId, UUID commentUserId, String commentUserNickname, String content, int likeCount, Timestamp commentCreatedAt) {
         this.id = id;
         this.likeBy = likeBy;
         this.createdAt = createdAt;

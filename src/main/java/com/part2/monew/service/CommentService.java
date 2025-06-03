@@ -16,4 +16,6 @@ public interface CommentService {
     CommentResponse update(UUID id, String content);
 
     CommentLikeReponse likeComment(UUID id, UUID userId);
+
+    void unlikeComment(UUID id, UUID userId);
 }

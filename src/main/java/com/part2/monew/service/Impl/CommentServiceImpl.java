@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
         NewsArticle article = articleRepository.findById(requeset.getArticleId())
                 .orElseThrow( () ->  new NoSuchElementException("article with id " + requeset.getUserId() + " not found"));
 
-        CommentsManagement comment = CommentsManagement.create(user, article, requeset.getContent(), 0L);
+        CommentsManagement comment = CommentsManagement.create(user, article, requeset.getContent(), 0);
 
         CommentsManagement saveComment = commentRepository.saveAndFlush(comment);
 
@@ -80,9 +81,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentLikeReponse likeComment(UUID id, UUID userId) {
-        if(commentLikeRepository.existsCommentLikeByCommentsManagement_IdAndUser_Id(id, userId)){
-            throw new IllegalArgumentException("좋아요를 이미 눌렀습니다.");
-        }
+        Optional<CommentLike> existingLikeOpt = commentLikeRepository.findByCommentsManagement_IdAndUser_Id(id, userId);
+
+        existingLikeOpt.ifPresent(cl -> {
+            throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
+        });
+
 
         User user = userRepository.findById(userId)
                 .orElseThrow( () ->  new NoSuchElementException("user with id " + userId + " not found"));
@@ -95,15 +99,32 @@ public class CommentServiceImpl implements CommentService {
 
         CommentLike saveComment = commentLikeRepository.saveAndFlush(commentLike);
 
-        Long totalLike = commentTotalLike(commentsManagement);
+        int totalLike = commentTotalLike(commentsManagement);
 
         commentsManagement.updateTotalCount(totalLike);
 
         return CommentLikeReponse.of(commentsManagement, saveComment);
     }
 
-    private Long commentTotalLike(CommentsManagement commentsManagement) {
-        return commentLikeRepository.findAllByCommentsManagement(commentsManagement).stream().count();
+    @Override
+    @Transactional
+    public void unlikeComment(UUID id, UUID userId) {
+        CommentLike commentLike = commentLikeRepository.findByCommentsManagement_IdAndUser_Id(id, userId)
+                .orElseThrow(( ) -> new NoSuchElementException("좋아요 취소를 이미 눌렀습니다."));
+
+        CommentsManagement commentsManagement = commentRepository.findById(id)
+                .orElseThrow( () ->  new NoSuchElementException("comment with id " + id + " not found"));
+
+
+        commentLikeRepository.deleteById(commentLike.getId());
+
+        int totalLike = commentTotalLike(commentsManagement);
+
+        commentsManagement.updateTotalCount(totalLike);
+    }
+
+    private int commentTotalLike(CommentsManagement commentsManagement) {
+        return commentLikeRepository.findAllByCommentsManagement(commentsManagement).size();
     }
 
 }
