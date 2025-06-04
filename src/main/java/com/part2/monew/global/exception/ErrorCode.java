@@ -34,7 +34,8 @@ public enum ErrorCode {
   // Comment Errors (Cxxx)
   COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "C001", "해당 댓글을 찾을 수 없습니다."),
   COMMENT_LIKE_DUPLICATION(HttpStatus.BAD_REQUEST, "C002", "이미 좋아요가 되어있습니다."),
-  COMMENT_UNLIKE_DUPLICATION(HttpStatus.BAD_REQUEST, "C003", "이미 좋아요 취소가 되어있습니다.");
+  COMMENT_UNLIKE_DUPLICATION(HttpStatus.BAD_REQUEST, "C003", "이미 좋아요 취소가 되어있습니다."),
+  COMMENT_IS_ACTIVE(HttpStatus.BAD_REQUEST, "C004", "댓글 삭제 실패하였습니다.");
 
 
   private final HttpStatus status;

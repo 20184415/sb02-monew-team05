@@ -11,6 +11,7 @@ import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
 import com.part2.monew.global.exception.article.ArticleNotFoundException;
+import com.part2.monew.global.exception.comment.CommentIsActiveException;
 import com.part2.monew.global.exception.comment.CommentLikeDuplication;
 import com.part2.monew.global.exception.comment.CommentNotFoundException;
 import com.part2.monew.global.exception.comment.CommentUnlikeDuplication;
@@ -131,7 +132,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(UUID id) {
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow( () ->  new NoSuchElementException("comment with id " + id + " not found"));
+                .orElseThrow(CommentNotFoundException::new);
 
         commentsManagement.delete();
 
@@ -141,10 +142,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void hardDeleteComment(UUID id) {
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow( () ->  new NoSuchElementException("comment with id " + id + " not found"));
+                .orElseThrow(CommentNotFoundException::new);
 
         if(commentsManagement.isActive()){
-            throw new RuntimeException("isisActive " + commentsManagement.isActive() +"는 삭제를 진행할 수 없습니다.");
+            throw new CommentIsActiveException();
         }
 
         commentRepository.deleteById(id);
