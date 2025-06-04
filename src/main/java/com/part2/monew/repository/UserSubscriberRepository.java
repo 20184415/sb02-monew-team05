@@ -1,5 +1,6 @@
 package com.part2.monew.repository;
 
+import com.part2.monew.entity.User;
 import com.part2.monew.entity.UserSubscriber;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserSubscriberRepository extends JpaRepository<UserSubscriber, UUID> {
 
+  List<UserSubscriber> findByUser(User user);
   boolean existsByUser_IdAndInterest_Id(UUID userId, UUID interestId);
 
   Optional<UserSubscriber> findByUser_IdAndInterest_Id(UUID userId, UUID interestId);
