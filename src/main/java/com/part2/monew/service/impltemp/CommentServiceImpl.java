@@ -1,4 +1,4 @@
-package com.part2.monew.service.Impl;
+package com.part2.monew.service.impltemp;
 
 
 import com.part2.monew.dto.request.CommentRequest;

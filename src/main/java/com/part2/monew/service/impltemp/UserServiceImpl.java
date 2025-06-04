@@ -1,4 +1,4 @@
-package com.part2.monew.service.impl;
+package com.part2.monew.service.impltemp;
 
 import com.part2.monew.dto.request.UserCreateRequest;
 import com.part2.monew.dto.request.UserLoginRequest;
