@@ -8,14 +8,11 @@ import com.part2.monew.dto.response.CursorResponse;
 import com.part2.monew.entity.CommentsManagement;
 import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
-<<<<<<< HEAD
 import com.part2.monew.repository.CommentLikeRepository;
-=======
 import com.part2.monew.global.exception.ErrorCode;
 import com.part2.monew.global.exception.comment.CommentLikeDuplication;
 import com.part2.monew.global.exception.comment.CommentUnlikeDuplication;
 import com.part2.monew.global.exception.user.UserNotFoundException;
->>>>>>> a3a0a16 (feat: 댓글 기능 커스텀 예외 추가)
 import com.part2.monew.repository.CommentRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
