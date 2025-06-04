@@ -3,6 +3,7 @@ package com.part2.monew.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+@NoArgsConstructor
 @Entity
 @Getter
 @Setter
@@ -19,7 +21,7 @@ import java.util.UUID;
 public class UserSubscriber {
     @Id
     @UuidGenerator
-    @Column(name = "user_subscriber_id")
+    @Column(name = "user_subscriber_id",nullable = false, updatable = false, columnDefinition = "UUID")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
