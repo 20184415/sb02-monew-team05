@@ -12,4 +12,6 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, UUID> 
     List<CommentLike> findAllByCommentsManagement(CommentsManagement commentsManagement);
 
     Optional<CommentLike> findByCommentsManagement_IdAndUser_Id(UUID id, UUID userId);
+    List<CommentLike> findTop10ByUser_IdOrderByCreatedAtDesc(UUID userId);
+
 }
