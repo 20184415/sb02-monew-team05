@@ -122,7 +122,7 @@ public class CommentServiceImpl implements CommentService {
             );
         }
 
-        return CommentLikeReponse.of(commentsManagement, saveComment);
+        return CommentLikeResponse.of(commentsManagement, saveComment);
     }
 
     @Override
