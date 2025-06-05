@@ -3,6 +3,7 @@ package com.part2.monew.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record CursorPageResponse<T>(
     List<T> content,

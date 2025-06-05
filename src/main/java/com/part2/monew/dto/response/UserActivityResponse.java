@@ -22,4 +22,3 @@ public class UserActivityResponse {
     private List<UserArticleViewsActivityDto> articleViews;
 
 }
-

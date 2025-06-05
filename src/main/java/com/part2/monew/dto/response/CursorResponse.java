@@ -31,13 +31,13 @@ public class CursorResponse {
         List<CommentResponse> content = hasNext ? comments.subList(0, 5) : comments;
 
         return CursorResponse.builder()
-                .content(content)
-                .nextCursor(getNextCursor(content))
-                .nextAfter(getNextCursor(content))
-                .size(content.size())
-                .totalElements(totalElements)
-                .hasNext(hasNext(comments))
-                .build();
+            .content(content)
+            .nextCursor(getNextCursor(content))
+            .nextAfter(getNextCursor(content))
+            .size(content.size())
+            .totalElements(totalElements)
+            .hasNext(hasNext(comments))
+            .build();
     }
 
     private static boolean hasNext(List<CommentResponse> comments) {

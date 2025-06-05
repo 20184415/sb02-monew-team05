@@ -21,4 +21,4 @@ public interface ActivityDetailRepository extends JpaRepository<ActivityDetail, 
     @Query("SELECT ad FROM ActivityDetail ad WHERE ad.user.id = :userId AND ad.newsArticle.id = :articleId")
     ActivityDetail findByUserIdAndArticleId(@Param("userId") UUID userId, @Param("articleId") UUID articleId);
     List<ActivityDetail> findTop10ByUserAndNewsArticleIsNotNullOrderByViewedAtDesc(User user);
-} 
+}

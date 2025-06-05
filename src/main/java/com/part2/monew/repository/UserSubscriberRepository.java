@@ -1,5 +1,6 @@
 package com.part2.monew.repository;
 
+import com.part2.monew.entity.User;
 import com.part2.monew.entity.UserSubscriber;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,9 @@ public interface UserSubscriberRepository extends JpaRepository<UserSubscriber, 
   boolean existsByUser_IdAndInterest_Id(UUID userId, UUID interestId);
 
   Optional<UserSubscriber> findByUser_IdAndInterest_Id(UUID userId, UUID interestId);
+
+
+  List<UserSubscriber> findByUser(User user);
 
   @Query("SELECT us.interest.id FROM UserSubscriber us WHERE us.user.id = :userId AND us.interest.id IN :interestIds")
   Set<UUID> findSubscribedInterestIdsByUserIdAndInterestIdsIn(@Param("userId") UUID userId, @Param("interestIds") List<UUID> interestIds);

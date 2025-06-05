@@ -47,16 +47,16 @@ public class CommentLikeResponse {
 
     public static CommentLikeResponse of(CommentsManagement commentsManagement, CommentLike commentLike) {
         return CommentLikeResponse.builder()
-                .id(commentLike.getId())
-                .likeBy(commentLike.getId())
-                .createdAt(commentLike.getCreatedAt())
-                .commentId(commentLike.getCommentsManagement().getId())
-                .articleId(commentsManagement.getNewsArticle().getId())
-                .commentUserId(commentsManagement.getUser().getId())
-                .commentUserNickname(commentsManagement.getUser().getUsername())
-                .content(commentsManagement.getContent())
-                .likeCount(commentsManagement.getLikeCount())
-                .commentCreatedAt(commentsManagement.getCreatedAt())
-                .build();
+            .id(commentLike.getId())
+            .likeBy(commentLike.getId())
+            .createdAt(commentLike.getCreatedAt())
+            .commentId(commentLike.getCommentsManagement().getId())
+            .articleId(commentsManagement.getNewsArticle().getId())
+            .commentUserId(commentsManagement.getUser().getId())
+            .commentUserNickname(commentsManagement.getUser().getUsername())
+            .content(commentsManagement.getContent())
+            .likeCount(commentsManagement.getLikeCount())
+            .commentCreatedAt(commentsManagement.getCreatedAt())
+            .build();
     }
 }

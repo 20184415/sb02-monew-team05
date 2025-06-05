@@ -7,5 +7,7 @@ import java.util.UUID;
 
 public interface NotificationService {
     Notification createNotification(User user, String content, String resourceType, UUID resourceId);
+    void updatedAll(UUID notificationId);
+    void updated(UUID notificationId, UUID userId);
 
 }
