@@ -27,9 +27,9 @@ public class CreateCommentRequest {
 
     public static CreateCommentRequest create(UUID articleId, UUID userId, String content) {
         return CreateCommentRequest.builder()
-                .articleId(articleId)
-                .userId(userId)
-                .content(content)
-                .build();
+            .articleId(articleId)
+            .userId(userId)
+            .content(content)
+            .build();
     }
 }

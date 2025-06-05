@@ -33,15 +33,15 @@ public class CommentResponse {
 
     public static CommentResponse of(CommentsManagement comment) {
         return CommentResponse.builder()
-                .id(comment.getId())
-                .articleId(comment.getNewsArticle().getId())
-                .userId(comment.getUser().getId())
-                .userNickname(comment.getUser().getUsername())
-                .content(comment.getContent())
-                .likeCount(comment.getLikeCount())
-                .likedByMe( comment.getLikeCount() > 0)
-                .createdAt(comment.getCreatedAt())
-                .build();
+            .id(comment.getId())
+            .articleId(comment.getNewsArticle().getId())
+            .userId(comment.getUser().getId())
+            .userNickname(comment.getUser().getUsername())
+            .content(comment.getContent())
+            .likeCount(comment.getLikeCount())
+            .likedByMe( comment.getLikeCount() > 0)
+            .createdAt(comment.getCreatedAt())
+            .build();
     }
 
 }

@@ -36,18 +36,18 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(
-            @RequestBody @Valid UserLoginRequest request,
-            HttpServletResponse response
+        @RequestBody @Valid UserLoginRequest request,
+        HttpServletResponse response
     ) {
         User user = userService.loginUser(request);
-        response.setHeader("Monew-Request-User-ID", user.getId().toString());
+        response.setHeader("MoNew-Request-User-ID", user.getId().toString());
         return ResponseEntity.ok(userMapper.toResponse(user));
     }
 
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponse> updateNickname(
         @PathVariable UUID userId,
-        @RequestHeader("Monew-Request-User-ID") UUID requestUserId,
+        @RequestHeader("MoNew-Request-User-ID") UUID requestUserId,
         @RequestBody @Valid UserUpdateRequest request
     ) {
         UserResponse updatedUser = userService.updateNickname(userId, requestUserId, request);
@@ -57,7 +57,7 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> delete(
         @PathVariable UUID userId,
-        @RequestHeader("Monew-Request-User-ID") UUID requestUserId
+        @RequestHeader("MoNew-Request-User-ID") UUID requestUserId
     ) {
         userService.delete(userId, requestUserId);
         return ResponseEntity.noContent().build();
@@ -66,7 +66,7 @@ public class UserController {
     @DeleteMapping("/{userId}/hard")
     public ResponseEntity<Void> deleteHard(
         @PathVariable UUID userId,
-        @RequestHeader("Monew-Request-User-ID") UUID requestUserId
+        @RequestHeader("MoNew-Request-User-ID") UUID requestUserId
     ) {
         userService.deleteHard(userId, requestUserId);
         return ResponseEntity.noContent().build();

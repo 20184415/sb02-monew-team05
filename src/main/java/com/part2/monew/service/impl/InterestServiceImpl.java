@@ -4,16 +4,23 @@ import com.part2.monew.dto.request.InterestRegisterRequestDto;
 import com.part2.monew.dto.request.InterestUpdateRequestDto;
 import com.part2.monew.dto.response.CursorPageResponse;
 import com.part2.monew.dto.response.InterestDto;
+import com.part2.monew.dto.response.SubscriptionResponse;
 import com.part2.monew.entity.Interest;
 import com.part2.monew.entity.InterestKeyword;
 import com.part2.monew.entity.Keyword;
+import com.part2.monew.entity.User;
+import com.part2.monew.entity.UserSubscriber;
 import com.part2.monew.global.exception.BusinessException;
 import com.part2.monew.global.exception.ErrorCode;
 import com.part2.monew.global.exception.SimilarInterestExistsException;
 import com.part2.monew.mapper.InterestMapper;
+import com.part2.monew.mapper.SubscriptionMapper;
 import com.part2.monew.repository.InterestRepository;
 import com.part2.monew.repository.KeywordRepository;
+import com.part2.monew.repository.UserRepository;
+import com.part2.monew.repository.UserSubscriberRepository;
 import com.part2.monew.service.InterestService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
@@ -32,6 +39,9 @@ public class InterestServiceImpl implements InterestService {
   private final KeywordRepository keywordRepository;
   private final InterestMapper interestMapper;
   private final JaroWinklerSimilarity jaroWinklerSimilarity = new JaroWinklerSimilarity();
+  private final UserRepository userRepository;
+  private final UserSubscriberRepository userSubscriberRepository;
+  private final SubscriptionMapper subscriptionMapper;
 
   @Transactional
   @Override
@@ -104,10 +114,10 @@ public class InterestServiceImpl implements InterestService {
     interestToUpdate.getInterestKeywords().clear();
 
     for (Keyword keywordEntity : newKeywordEntities) {
-      InterestKeyword newInterestKeyword = new InterestKeyword(); // InterestKeyword 엔티티에 기본 생성자 및 setter 가정
+      InterestKeyword newInterestKeyword = new InterestKeyword();
       newInterestKeyword.setInterest(interestToUpdate);
       newInterestKeyword.setKeyword(keywordEntity);
-      interestToUpdate.getInterestKeywords().add(newInterestKeyword); // Interest의 컬렉션에 추가
+      interestToUpdate.getInterestKeywords().add(newInterestKeyword);
     }
 
     Interest updatedInterest = interestRepository.save(interestToUpdate);
@@ -144,5 +154,71 @@ public class InterestServiceImpl implements InterestService {
         limit,
         requestUserId
     );
+  }
+
+  @Transactional
+  @Override
+  public void deleteInterest(UUID interestId, UUID requestUserId) {
+    Interest interestToDelete = interestRepository.findById(interestId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.INTEREST_NOT_FOUND,
+            String.format("삭제할 관심사를 찾을 수 없습니다. ID: %s", interestId)));
+
+    log.info("관심사 삭제 요청 - ID: {}, 요청자 ID: {}", interestId, requestUserId);
+
+    interestRepository.delete(interestToDelete);
+
+    log.info("관심사 삭제 완료 - ID: {}", interestId);
+  }
+
+  @Transactional
+  @Override
+  public SubscriptionResponse subscribeToInterest(UUID interestId, UUID requestUserId) {
+    User user = userRepository.findById(requestUserId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+    Interest interest = interestRepository.findById(interestId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.INTEREST_NOT_FOUND));
+
+    if (userSubscriberRepository.existsByUser_IdAndInterest_Id(requestUserId, interestId)) {
+      throw new BusinessException(ErrorCode.ALREADY_SUBSCRIBED_INTEREST);
+    }
+
+    UserSubscriber newSubscription = new UserSubscriber();
+    newSubscription.setUser(user);
+    newSubscription.setInterest(interest);
+    UserSubscriber savedSubscription = userSubscriberRepository.save(newSubscription);
+
+    interest.setSubscriberCount(interest.getSubscriberCount() + 1);
+    Interest updatedInterest = interestRepository.save(interest);
+
+    log.info("사용자(ID: {})가 관심사(ID: {}, 이름: '{}')를 구독했습니다. 현재 구독자 수: {}",
+        requestUserId, interestId, updatedInterest.getName(), updatedInterest.getSubscriberCount());
+
+    return subscriptionMapper.toSubscriptionResponse(savedSubscription, updatedInterest);
+  }
+
+  @Transactional
+  @Override
+  public void unsubscribeFromInterest(UUID interestId, UUID requestUserId) {
+    Interest interest = interestRepository.findById(interestId)
+        .orElse(null);
+    Optional<UserSubscriber> existingSubscriptionOpt = userSubscriberRepository.findByUser_IdAndInterest_Id(requestUserId, interestId);
+    if (existingSubscriptionOpt.isPresent()) {
+      UserSubscriber existingSubscription = existingSubscriptionOpt.get();
+      userSubscriberRepository.delete(existingSubscription);
+
+      if (interest != null) {
+        int currentSubscribers = interest.getSubscriberCount();
+        interest.setSubscriberCount(Math.max(0, currentSubscribers - 1));
+        interestRepository.save(interest);
+        log.info("사용자(ID: {})가 관심사(ID: {}, 이름: '{}') 구독을 취소했습니다. 현재 구독자 수: {}",
+            requestUserId, interestId, interest.getName(), interest.getSubscriberCount());
+      } else {
+        log.warn("구독 취소 처리 중: 구독 정보는 존재하나 관심사(ID: {})를 찾을 수 없습니다. 구독 정보만 삭제합니다.", interestId);
+      }
+    } else {
+      log.info("사용자(ID: {})는 관심사(ID: {})를 이미 구독하고 있지 않거나, 관심사 자체가 존재하지 않습니다. 구독 취소 요청을 스킵합니다.",
+          requestUserId, interestId);
+    }
   }
 }

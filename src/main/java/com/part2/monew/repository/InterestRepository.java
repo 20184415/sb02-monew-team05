@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface InterestRepository extends JpaRepository<Interest, UUID>,
     InterestRepositoryCustom {
 
+
   boolean existsByName(String name);
 
   @Query("SELECT i.name FROM Interest i")

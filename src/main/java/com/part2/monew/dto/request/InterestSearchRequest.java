@@ -2,7 +2,6 @@ package com.part2.monew.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-
 public record InterestSearchRequest(
     String keyword,
     @NotBlank(message = "정렬 기준(orderBy)은 필수입니다.")
@@ -14,9 +13,9 @@ public record InterestSearchRequest(
     @Min(value = 1, message = "페이지 크기(limit)는 1 이상이어야 합니다.")
     Integer limit
 ) {
-  public InterestSearchRequest {
-    if (limit == null) {
-      limit = 50;
+    public InterestSearchRequest {
+        if (limit == null) {
+            limit = 50;
+        }
     }
-  }
 }

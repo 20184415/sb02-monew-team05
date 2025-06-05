@@ -23,31 +23,46 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom {
     @Override
     public List<CommentsManagement> findCommentsByArticleId(UUID articleId, Timestamp after, int limit) {
         return queryFactory
-                .selectFrom(commentsManagement)
-                .join(commentsManagement.user, user).fetchJoin()
-                .join(commentsManagement.newsArticle, newsArticle).fetchJoin()
-                .where(
-                        commentsManagement.newsArticle.id.eq(articleId),
-                        commentsManagement.active.isTrue(),
-                        ltCreatedAt(after)
-                )
-                .orderBy(commentsManagement.createdAt.desc())
-                .limit(limit + 1)
-                .fetch();
+            .selectFrom(commentsManagement)
+            .join(commentsManagement.user, user).fetchJoin()
+            .join(commentsManagement.newsArticle, newsArticle).fetchJoin()
+            .where(
+                commentsManagement.newsArticle.id.eq(articleId),
+                commentsManagement.active.isTrue(),
+                ltCreatedAt(after)
+            )
+            .orderBy(commentsManagement.createdAt.desc())
+            .limit(limit + 1)
+            .fetch();
     }
 
     @Override
     public Long totalCount(UUID articleId) {
         return queryFactory
-                .selectFrom(commentsManagement)
-                .where(
-                        commentsManagement.newsArticle.id.eq(articleId),
-                        commentsManagement.active.isTrue()
-                ).fetchCount();
+            .selectFrom(commentsManagement)
+            .where(
+                commentsManagement.newsArticle.id.eq(articleId),
+                commentsManagement.active.isTrue()
+            ).fetchCount();
     }
 
     private BooleanExpression ltCreatedAt(Timestamp after) {
         return after != null ? commentsManagement.createdAt.lt(after) : null;
+    }
+
+    @Override
+    public List<CommentsManagement> findTop10RecentCommentsByUserId(UUID userId) {
+        return queryFactory
+            .selectFrom(commentsManagement)
+            .join(commentsManagement.user, user).fetchJoin()
+            .join(commentsManagement.newsArticle, newsArticle).fetchJoin()
+            .where(
+                commentsManagement.user.id.eq(userId),
+                commentsManagement.active.isTrue()
+            )
+            .orderBy(commentsManagement.createdAt.desc())
+            .limit(10)
+            .fetch();
     }
 
 }
