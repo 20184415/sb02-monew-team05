@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+
 @Getter
 public class CommentResponse {
     private UUID id;
@@ -36,7 +37,7 @@ public class CommentResponse {
             .id(comment.getId())
             .articleId(comment.getNewsArticle().getId())
             .userId(comment.getUser().getId())
-            .userNickname(comment.getUser().getUsername())
+            .userNickname(comment.getUser().getNickname())
             .content(comment.getContent())
             .likeCount(comment.getLikeCount())
             .likedByMe( comment.getLikeCount() > 0)

@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(UserCreateRequest request){
         if(userRepository.existsByEmail(request.email())){
-            throw new EmailDuplicateException(request.email());
+            throw new EmailDuplicateException();
         }
 
         User user = userMapper.toEntity(request);
@@ -58,10 +58,10 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
-            throw new NoPermissionToUpdateException("사용자 수정 권한이 없습니다.");
+            throw new NoPermissionToUpdateException();
         }
 
-        user.setUsername(request.getNickname());
+        user.setNickname(request.getNickname());
         userRepository.save(user);
         return userMapper.toResponse(user);
     }
@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
-            throw new NoPermissionToDeleteException("사용자 삭제 권한이 없습니다.");
+            throw new NoPermissionToDeleteException();
         }
 
         user.setActive(false);
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
-            throw new NoPermissionToDeleteException("사용자 하드 삭제 권한이 없습니다.");
+            throw new NoPermissionToDeleteException();
         }
 
         userRepository.delete(user);

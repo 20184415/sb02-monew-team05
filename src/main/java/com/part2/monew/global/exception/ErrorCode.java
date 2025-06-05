@@ -19,7 +19,8 @@ public enum ErrorCode {
   EMAIL_DUPLICATED(HttpStatus.CONFLICT, "U002", "이미 사용 중인 이메일입니다."),
   NO_PERMISSION_TO_UPDATE(HttpStatus.FORBIDDEN, "U003", "사용자를 수정할 권한이 없습니다."),
   NO_PERMISSION_TO_DELETE(HttpStatus.FORBIDDEN, "U004", "사용자를 삭제할 권한이 없습니다."),
-
+  // Notification Errors (Nxxx)
+  NOTIFICATION_NO_PARSING(HttpStatus.NOT_FOUND, "N001", "Cursor 값이 잘못된 형식입니다."),
   // Interest Errors (Ixxx)
   INTEREST_NAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "I001", "이미 존재하는 관심사 이름입니다."),
   SIMILAR_INTEREST_EXISTS(HttpStatus.CONFLICT, "I002", "매우 유사한 이름의 관심사가 이미 존재합니다. 다른 이름을 사용해주세요."),
