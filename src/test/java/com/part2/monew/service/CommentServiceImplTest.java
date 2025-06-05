@@ -193,28 +193,28 @@ class CommentServiceImplTest {
 
         // then
         assertThat(response)
-            .extracting(
-                "id",
-                "likeBy",
-                "createdAt",
-                "commentId",
-                "articleId",
-                "commentUserId",
-                "commentUserNickname",
-                "content",
-                "likeCount",
-                "commentCreatedAt")
-            .containsExactly(
-                response.getId(),
-                response.getLikeBy(),
-                response.getCreatedAt(),
-                comment.getId(),
-                article.getId(),
-                comment.getUser().getId(),
-                comment.getUser().getUsername(),
-                comment.getContent(),
-                1,
-                comment.getCreatedAt());
+                .extracting(
+                        "id",
+                        "likeBy",
+                        "createdAt",
+                        "commentId",
+                        "articleId",
+                        "commentUserId",
+                        "commentUserNickname",
+                        "content",
+                        "likeCount",
+                        "commentCreatedAt")
+                .containsExactly(
+                        response.getId(),
+                        response.getLikeBy(),
+                        response.getCreatedAt(),
+                        comment.getId(),
+                        article.getId(),
+                        comment.getUser().getId(),
+                        comment.getUser().getNickname(),
+                        comment.getContent(),
+                        1,
+                        comment.getCreatedAt());
     }
 
     @DisplayName("댓글 좋아요가 중복 호출되면 예외가 발생한다.")

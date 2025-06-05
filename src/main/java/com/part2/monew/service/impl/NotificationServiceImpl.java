@@ -1,6 +1,8 @@
 package com.part2.monew.service.impl;
 
+import com.part2.monew.dto.request.NotificationCursorRequest;
 import com.part2.monew.dto.response.CursorPageResponse;
+import com.part2.monew.dto.response.NotificationResponse;
 import com.part2.monew.entity.Notification;
 import com.part2.monew.entity.User;
 import com.part2.monew.global.exception.user.NoPermissionToUpdateException;
@@ -14,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +63,7 @@ public class NotificationServiceImpl implements NotificationService {
         Timestamp oneWeekAgo = Timestamp.valueOf(LocalDateTime.now().minusWeeks(1));
         notificationRepository.deleteConfirmedNotificationsBefore(oneWeekAgo);
     }
+
     @Override
     public CursorPageResponse<NotificationResponse> getNoConfirmedNotifications(UUID userId, NotificationCursorRequest request) {
         int limit = (request.limit() != null && request.limit() > 0) ? request.limit() : 10;
@@ -86,21 +91,21 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         List<NotificationResponse> content = notifications.stream()
-            .map(n -> new NotificationResponse(
-                n.getId(),
-                n.getCreatedAt(),
-                n.getUpdatedAt(),
-                n.isConfirmed(),
-                n.getUser().getId(),
-                n.getContent(),
-                n.getResourceType(),
-                n.getResourceId()
-            ))
-            .collect(Collectors.toList());
+                .map(n -> new NotificationResponse(
+                        n.getId(),
+                        n.getCreatedAt(),
+                        n.getUpdatedAt(),
+                        n.isConfirmed(),
+                        n.getUser().getId(),
+                        n.getContent(),
+                        n.getResourceType(),
+                        n.getResourceId()
+                ))
+                .collect(Collectors.toList());
 
         String nextCursor = (hasNext && !content.isEmpty())
-            ? content.get(content.size() - 1).createdAt().toString()
-            : null;
+                ? content.get(content.size() - 1).createdAt().toString()
+                : null;
 
         long totalElements = notificationRepository.countByUserIdAndConfirmedFalse(userId);
 
