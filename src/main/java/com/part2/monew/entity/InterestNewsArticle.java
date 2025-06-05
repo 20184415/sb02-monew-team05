@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -41,7 +40,7 @@ public class InterestNewsArticle {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Timestamp updatedAt;
-    
+
     public static InterestNewsArticle create(Interest interest, NewsArticle newsArticle) {
         return InterestNewsArticle.builder()
                 .interest(interest)

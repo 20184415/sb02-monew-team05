@@ -47,9 +47,9 @@ public class CommentLike {
 
     public static CommentLike create(User user, CommentsManagement commentsManagement) {
         return CommentLike.builder()
-                .user(user)
-                .commentsManagement(commentsManagement)
-                .build();
+            .user(user)
+            .commentsManagement(commentsManagement)
+            .build();
 
     }
 }

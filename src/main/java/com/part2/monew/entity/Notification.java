@@ -13,6 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "notifications")
 public class Notification {
@@ -40,7 +41,7 @@ public class Notification {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
-    
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Timestamp updatedAt;
@@ -53,7 +54,5 @@ public class Notification {
     }
 
 
-    public void setConfirmed(boolean b) {
-        this.confirmed = b;
-    }
+
 }
