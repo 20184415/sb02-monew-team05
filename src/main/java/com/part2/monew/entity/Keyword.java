@@ -15,7 +15,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "keywords")
+@Table(name = "kewords")
 public class Keyword {
     @Id
     @UuidGenerator

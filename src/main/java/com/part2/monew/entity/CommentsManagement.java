@@ -63,20 +63,20 @@ public class CommentsManagement {
 
     public static CommentsManagement create(User user, NewsArticle newsArticle, String content, int likeCount) {
         return CommentsManagement.builder()
-                .user(user)
-                .newsArticle(newsArticle)
-                .content(content)
-                .likeCount(likeCount)
-                .build();
+            .user(user)
+            .newsArticle(newsArticle)
+            .content(content)
+            .likeCount(likeCount)
+            .build();
     }
 
     public static CommentsManagement create(User user, NewsArticle newsArticle, String content, int likeCount, Timestamp createAt) {
         CommentsManagement cm = CommentsManagement.builder()
-                .user(user)
-                .newsArticle(newsArticle)
-                .content(content)
-                .likeCount(likeCount)
-                .build();
+            .user(user)
+            .newsArticle(newsArticle)
+            .content(content)
+            .likeCount(likeCount)
+            .build();
         cm.createdAt = createAt;
         return cm;
     }
