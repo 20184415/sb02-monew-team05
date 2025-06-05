@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+
 @Slf4j
 public class WebContentExtractor {
 

@@ -1,8 +1,5 @@
 package com.part2.monew.controller;
 
-import com.part2.monew.dto.response.UserActivityResponse;
-import com.part2.monew.service.UserActivityService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +19,6 @@ public class UserActivityController {
 
   @GetMapping("/{userId}")
   public ResponseEntity<UserActivityResponse> getUserActivity(@PathVariable UUID userId) {
-    UserActivityResponse response = userActivityService.getUserActivity(userId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(userActivityService.getUserActivity(userId));
   }
 }

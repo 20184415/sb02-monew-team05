@@ -1,6 +1,5 @@
 package com.part2.monew.repository;
 
-import com.part2.monew.entity.User;
 import com.part2.monew.entity.UserSubscriber;
 import java.util.List;
 import java.util.Optional;

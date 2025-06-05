@@ -18,4 +18,6 @@ public interface InterestService {
       String cursor, String after, int limit, UUID requestUserId);
 
   SubscriptionResponse subscribeToInterest(UUID interestId, UUID requestUserId);
+
+    void unsubscribeFromInterest(UUID interestId, UUID requestUserId);
 }
