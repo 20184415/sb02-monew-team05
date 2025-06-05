@@ -12,7 +12,7 @@ import com.part2.monew.entity.User;
 import com.part2.monew.entity.UserSubscriber;
 import com.part2.monew.global.exception.BusinessException;
 import com.part2.monew.global.exception.ErrorCode;
-import com.part2.monew.global.exception.interest.SimilarInterestExistsException;
+import com.part2.monew.global.exception.SimilarInterestExistsException;
 import com.part2.monew.mapper.InterestMapper;
 import com.part2.monew.mapper.SubscriptionMapper;
 import com.part2.monew.repository.InterestRepository;

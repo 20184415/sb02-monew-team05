@@ -20,7 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/interests")
@@ -31,8 +36,8 @@ public class InterestController {
 
   @PostMapping
   public ResponseEntity<InterestDto> registerInterest(@Valid @RequestBody
-      InterestRegisterRequestDto requestDto, @RequestHeader(value = "Monew-Request-User-ID",required = false)
-      UUID requestUserId){
+  InterestRegisterRequestDto requestDto, @RequestHeader(value = "Monew-Request-User-ID",required = false)
+  UUID requestUserId){
     InterestDto createdInterest = interestService.registerInterest(requestDto, requestUserId);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(createdInterest);
@@ -40,7 +45,7 @@ public class InterestController {
 
   @PatchMapping("/{interestId}")
   public ResponseEntity<InterestDto> updateInterestKeywords(@PathVariable UUID interestId, @Valid @RequestBody
-      InterestUpdateRequestDto requestDto, @RequestHeader(value = "Monew-Request-User-Id", required = false) UUID requestUserId) {
+  InterestUpdateRequestDto requestDto, @RequestHeader(value = "Monew-Request-User-Id", required = false) UUID requestUserId) {
     InterestDto updatedIntertest = interestService.updateInterestKeywords(interestId, requestDto,
         requestUserId);
     return ResponseEntity.ok(updatedIntertest);

@@ -36,8 +36,8 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(
-            @RequestBody @Valid UserLoginRequest request,
-            HttpServletResponse response
+        @RequestBody @Valid UserLoginRequest request,
+        HttpServletResponse response
     ) {
         User user = userService.loginUser(request);
         response.setHeader("MoNew-Request-User-ID", user.getId().toString());

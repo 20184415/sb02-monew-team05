@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+
 @Getter
 public class CommentResponse {
     private UUID id;
@@ -33,15 +34,15 @@ public class CommentResponse {
 
     public static CommentResponse of(CommentsManagement comment) {
         return CommentResponse.builder()
-                .id(comment.getId())
-                .articleId(comment.getNewsArticle().getId())
-                .userId(comment.getUser().getId())
-                .userNickname(comment.getUser().getNickname())
-                .content(comment.getContent())
-                .likeCount(comment.getLikeCount())
-                .likedByMe( comment.getLikeCount() > 0)
-                .createdAt(comment.getCreatedAt())
-                .build();
+            .id(comment.getId())
+            .articleId(comment.getNewsArticle().getId())
+            .userId(comment.getUser().getId())
+            .userNickname(comment.getUser().getNickname())
+            .content(comment.getContent())
+            .likeCount(comment.getLikeCount())
+            .likedByMe( comment.getLikeCount() > 0)
+            .createdAt(comment.getCreatedAt())
+            .build();
     }
 
 }

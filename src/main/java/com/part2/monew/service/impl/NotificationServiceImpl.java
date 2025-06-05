@@ -9,18 +9,16 @@ import com.part2.monew.global.exception.user.NoPermissionToUpdateException;
 import com.part2.monew.repository.NotificationRepository;
 import com.part2.monew.repository.UserRepository;
 import com.part2.monew.service.NotificationService;
+import jakarta.transaction.Transactional;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -91,21 +89,21 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         List<NotificationResponse> content = notifications.stream()
-                .map(n -> new NotificationResponse(
-                        n.getId(),
-                        n.getCreatedAt(),
-                        n.getUpdatedAt(),
-                        n.isConfirmed(),
-                        n.getUser().getId(),
-                        n.getContent(),
-                        n.getResourceType(),
-                        n.getResourceId()
-                ))
-                .collect(Collectors.toList());
+            .map(n -> new NotificationResponse(
+                n.getId(),
+                n.getCreatedAt(),
+                n.getUpdatedAt(),
+                n.isConfirmed(),
+                n.getUser().getId(),
+                n.getContent(),
+                n.getResourceType(),
+                n.getResourceId()
+            ))
+            .collect(Collectors.toList());
 
         String nextCursor = (hasNext && !content.isEmpty())
-                ? content.get(content.size() - 1).createdAt().toString()
-                : null;
+            ? content.get(content.size() - 1).createdAt().toString()
+            : null;
 
         long totalElements = notificationRepository.countByUserIdAndConfirmedFalse(userId);
 

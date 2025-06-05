@@ -76,11 +76,11 @@ class CommentServiceImplTest {
         em.clear();
 
         CommentRequest request = CommentRequest.builder()
-                .articleId(article.getId())
-                .limit(5)
-                .orderBy("createdAt")
-                .direction("DESC")
-                .build();
+            .articleId(article.getId())
+            .limit(5)
+            .orderBy("createdAt")
+            .direction("DESC")
+            .build();
 
         // when
         CursorResponse response = commentService.findCommentsByArticleId(request);
@@ -112,11 +112,11 @@ class CommentServiceImplTest {
 
         // then
         CommentsManagement fetched = commentRepository.findById(saved.getId())
-                .orElseThrow(() -> new RuntimeException("Saved comment not found"));
+            .orElseThrow(() -> new RuntimeException("Saved comment not found"));
 
         assertThat(fetched)
-                .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
-                .containsExactly(user.getId(), article.getId(), "내용", 0, true);
+            .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
+            .containsExactly(user.getId(), article.getId(), "내용", 0, true);
 
     }
 
@@ -138,8 +138,8 @@ class CommentServiceImplTest {
         em.clear();
         // when // then
         assertThatThrownBy(() -> commentService.create(comment))
-                .isInstanceOf(UserNotFoundException.class)
-                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
+            .isInstanceOf(UserNotFoundException.class)
+            .hasMessage(ErrorCode.US.getMessage());
     }
 
     @DisplayName("댓글을 수정한다.")
@@ -163,11 +163,11 @@ class CommentServiceImplTest {
 
         // then
         CommentsManagement fetched = commentRepository.findById(saved.getId())
-                .orElseThrow(() -> new RuntimeException("Saved comment not found"));
+            .orElseThrow(() -> new RuntimeException("Saved comment not found"));
 
         assertThat(fetched)
-                .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
-                .containsExactly(user.getId(), article.getId(), "새로운 내용", 0, true);
+            .extracting("user.id", "newsArticle.id", "content", "likeCount", "active")
+            .containsExactly(user.getId(), article.getId(), "새로운 내용", 0, true);
 
 
     }
@@ -193,28 +193,28 @@ class CommentServiceImplTest {
 
         // then
         assertThat(response)
-                .extracting(
-                        "id",
-                        "likeBy",
-                        "createdAt",
-                        "commentId",
-                        "articleId",
-                        "commentUserId",
-                        "commentUserNickname",
-                        "content",
-                        "likeCount",
-                        "commentCreatedAt")
-                .containsExactly(
-                        response.getId(),
-                        response.getLikeBy(),
-                        response.getCreatedAt(),
-                        comment.getId(),
-                        article.getId(),
-                        comment.getUser().getId(),
-                        comment.getUser().getNickname(),
-                        comment.getContent(),
-                        1,
-                        comment.getCreatedAt());
+            .extracting(
+                "id",
+                "likeBy",
+                "createdAt",
+                "commentId",
+                "articleId",
+                "commentUserId",
+                "commentUserNickname",
+                "content",
+                "likeCount",
+                "commentCreatedAt")
+            .containsExactly(
+                response.getId(),
+                response.getLikeBy(),
+                response.getCreatedAt(),
+                comment.getId(),
+                article.getId(),
+                comment.getUser().getId(),
+                comment.getUser().getUsername(),
+                comment.getContent(),
+                1,
+                comment.getCreatedAt());
     }
 
     @DisplayName("댓글 좋아요가 중복 호출되면 예외가 발생한다.")
@@ -236,8 +236,8 @@ class CommentServiceImplTest {
 
         // when then
         assertThatThrownBy(() -> commentService.likeComment(comment.getId(), user.getId()))
-                .isInstanceOf(CommentLikeDuplication.class)
-                .hasMessage(ErrorCode.COMMENT_LIKE_DUPLICATION.getMessage());
+            .isInstanceOf(CommentLikeDuplication.class)
+            .hasMessage(ErrorCode.COMMENT_LIKE_DUPLICATION.getMessage());
 
     }
 
@@ -266,7 +266,7 @@ class CommentServiceImplTest {
 
         // then
         CommentsManagement updated = commentRepository.findById(comment.getId())
-                .orElseThrow(() -> new AssertionError("댓글이 DB에 존재하지 않습니다."));
+            .orElseThrow(() -> new AssertionError("댓글이 DB에 존재하지 않습니다."));
 
         assertThat(updated.getLikeCount()).isEqualTo(0);
     }
@@ -289,8 +289,8 @@ class CommentServiceImplTest {
 
         // when then
         assertThatThrownBy(() -> commentService.unlikeComment(comment.getId(), user.getId()))
-                .isInstanceOf(CommentUnlikeDuplication.class)
-                .hasMessage(ErrorCode.COMMENT_UNLIKE_DUPLICATION.getMessage());
+            .isInstanceOf(CommentUnlikeDuplication.class)
+            .hasMessage(ErrorCode.COMMENT_UNLIKE_DUPLICATION.getMessage());
 
     }
 
@@ -314,11 +314,8 @@ class CommentServiceImplTest {
 
         // then
         CommentsManagement updated = commentRepository.findById(comment.getId())
-                .orElseThrow(() -> new AssertionError("댓글이 DB에 존재하지 않습니다."));
+            .orElseThrow(() -> new AssertionError("댓글이 DB에 존재하지 않습니다."));
 
         assertThat(updated.isActive()).isFalse();
     }
 }
-
-
-

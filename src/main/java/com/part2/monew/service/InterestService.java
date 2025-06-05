@@ -5,6 +5,7 @@ import com.part2.monew.dto.request.InterestUpdateRequestDto;
 import com.part2.monew.dto.response.CursorPageResponse;
 import com.part2.monew.dto.response.InterestDto;
 import com.part2.monew.dto.response.SubscriptionResponse;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.UUID;
 
 public interface InterestService {

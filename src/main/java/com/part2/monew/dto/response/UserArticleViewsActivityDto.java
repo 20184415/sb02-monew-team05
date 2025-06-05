@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+
 @Getter
 @Builder
 public class UserArticleViewsActivityDto {

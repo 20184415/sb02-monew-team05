@@ -12,6 +12,7 @@ import org.mapstruct.ReportingPolicy;
 import java.time.Instant;
 import java.util.UUID;
 
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 

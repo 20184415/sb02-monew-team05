@@ -12,9 +12,9 @@ import com.part2.monew.global.exception.user.UserNotFoundException;
 import com.part2.monew.mapper.UserMapper;
 import com.part2.monew.repository.UserRepository;
 import com.part2.monew.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
         String password = request.password();
 
         User user = userRepository.findByEmailAndActiveTrue(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
         if(!user.getPassword().equals(password)){
             throw new RuntimeException("Incorrect password");
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateNickname(UUID userId, UUID requestUserId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
             throw new NoPermissionToUpdateException();
@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(UUID userId, UUID requestUserId) {
         User user = userRepository.findByIdAndActiveTrue(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
             throw new NoPermissionToDeleteException();
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteHard(UUID userId, UUID requestUserId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         if (!user.getId().equals(requestUserId)){
             throw new NoPermissionToDeleteException();

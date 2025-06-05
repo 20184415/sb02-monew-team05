@@ -50,8 +50,8 @@ public class CommentServiceImpl implements CommentService {
         Long totalElements = commentRepository.totalCount(commentRequest.getArticleId());
 
         List<CommentResponse> commentReponses = commentsManagements.stream()
-                .map(CommentResponse::of)
-                .collect(Collectors.toList());
+            .map(CommentResponse::of)
+            .collect(Collectors.toList());
 
         return CursorResponse.of(commentReponses, totalElements);
     }
@@ -60,11 +60,11 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponse create(CreateCommentRequest requeset) {
         User user = userRepository.findById(requeset.getUserId())
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
 
         NewsArticle article = articleRepository.findById(requeset.getArticleId())
-                .orElseThrow(ArticleNotFoundException::new);
+            .orElseThrow(ArticleNotFoundException::new);
 
         CommentsManagement comment = CommentsManagement.create(user, article, requeset.getContent(), 0);
 
@@ -78,7 +78,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentResponse update(UUID id, String content) {
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow(CommentNotFoundException::new);
+            .orElseThrow(CommentNotFoundException::new);
 
         commentsManagement.update(content);
 
@@ -96,10 +96,10 @@ public class CommentServiceImpl implements CommentService {
 
 
         User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow(CommentNotFoundException::new);
+            .orElseThrow(CommentNotFoundException::new);
 
 
         CommentLike commentLike = CommentLike.create(user, commentsManagement);
@@ -114,10 +114,10 @@ public class CommentServiceImpl implements CommentService {
         if (!commentOwner.getId().equals(user.getId())) {
             String content = (user.getNickname()+"님이 나의 댓글을 좋아합니다.");
             notificationService.createNotification(
-                    commentOwner,
-                    content,
-                    "COMMENT",
-                    commentsManagement.getId()
+                commentOwner,
+                content,
+                "COMMENT",
+                commentsManagement.getId()
             );
         }
 
@@ -128,10 +128,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void unlikeComment(UUID id, UUID userId) {
         CommentLike commentLike = commentLikeRepository.findByCommentsManagement_IdAndUser_Id(id, userId)
-                .orElseThrow(CommentUnlikeDuplication::new);
+            .orElseThrow(CommentUnlikeDuplication::new);
 
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow(CommentNotFoundException::new);
+            .orElseThrow(CommentNotFoundException::new);
 
 
         commentLikeRepository.deleteById(commentLike.getId());
@@ -145,7 +145,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(UUID id) {
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow(CommentNotFoundException::new);
+            .orElseThrow(CommentNotFoundException::new);
 
         commentsManagement.delete();
 
@@ -155,7 +155,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void hardDeleteComment(UUID id) {
         CommentsManagement commentsManagement = commentRepository.findById(id)
-                .orElseThrow(CommentNotFoundException::new);
+            .orElseThrow(CommentNotFoundException::new);
 
         if(commentsManagement.isActive()){
             throw new CommentIsActiveException();
