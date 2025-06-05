@@ -12,6 +12,7 @@ import org.mapstruct.ReportingPolicy;
 import java.time.Instant;
 import java.util.UUID;
 
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
@@ -19,7 +20,6 @@ public interface UserMapper {
     @Mapping(target = "active", constant = "true")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "username", source = "nickname")
     User toEntity(UserCreateRequest request);
 
     @Mapping(target = "createdAt", expression = "java(user.getCreatedAt())")
