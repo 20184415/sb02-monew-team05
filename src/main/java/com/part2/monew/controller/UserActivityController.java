@@ -1,22 +1,32 @@
 package com.part2.monew.controller;
 
-import com.part2.monew.dto.response.UserActivityResponse;
-import com.part2.monew.service.UserActivityService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequiredArgsConstructor
-@RequestMapping("/api/user-activities")
+@RequestMapping("/api")
 public class UserActivityController {
 
-  private final UserActivityService userActivityService;
-
-  @GetMapping("/{userId}")
-  public ResponseEntity<UserActivityResponse> getUserActivity(@PathVariable UUID userId) {
-    return ResponseEntity.ok(userActivityService.getUserActivity(userId));
-  }
-}
+    @GetMapping({"/user-activities/{userId}", "/user-activities/"})
+    public ResponseEntity<Map<String, Object>> getUserActivities(@PathVariable(required = false) UUID userId) {
+        
+        // 임시로 빈 사용자 활동 반환 (null 값 제거)
+        String userIdString = userId != null ? userId.toString() : "anonymous";
+        Map<String, Object> response = Map.of(
+            "userId", userIdString,
+            "activities", Collections.emptyList(),
+            "totalCount", 0,
+            "articlesRead", 0,
+            "commentsWritten", 0
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+} 

@@ -1,6 +1,8 @@
 package com.part2.monew.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,6 +16,8 @@ import java.util.UUID;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "activity_details")
 public class ActivityDetail {
@@ -27,22 +31,10 @@ public class ActivityDetail {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interest_id")
-    private Interest interest;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
-    private CommentsManagement comment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "liked_comment_id")
-    private CommentLike likedComment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "news_articles_id")
+    @JoinColumn(name = "news_articles_id", nullable = false)
     private NewsArticle newsArticle;
 
-    @Column(name = "views_at")
+    @Column(name = "views_at", nullable = false)
     private Timestamp viewedAt;
 
     @CreationTimestamp
