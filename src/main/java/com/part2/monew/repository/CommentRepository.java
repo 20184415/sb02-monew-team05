@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.Map;
+import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<CommentsManagement, UUID>, CommentRepositoryCustom {
@@ -14,5 +16,12 @@ public interface CommentRepository extends JpaRepository<CommentsManagement, UUI
     // 특정 기사의 활성 댓글 수 조회
     @Query("SELECT COUNT(c) FROM CommentsManagement c WHERE c.newsArticle.id = :articleId AND c.active = true")
     Long countActiveCommentsByArticleId(@Param("articleId") UUID articleId);
+
+    // 여러 기사의 활성 댓글 수를 한 번에 조회 (N+1 문제 해결)
+    @Query("SELECT c.newsArticle.id as articleId, COUNT(c) as commentCount " +
+           "FROM CommentsManagement c " +
+           "WHERE c.newsArticle.id IN :articleIds AND c.active = true " +
+           "GROUP BY c.newsArticle.id")
+    List<Object[]> countActiveCommentsByArticleIds(@Param("articleIds") List<UUID> articleIds);
 
 }

@@ -1,28 +1,22 @@
 package com.part2.monew.controller;
 
-import com.part2.monew.dto.ArticleResponseDto;
+import com.part2.monew.dto.ArticleSearchRequestDto;
+import com.part2.monew.dto.FilterDto;
 import com.part2.monew.dto.NewsArticleResponseDto;
 import com.part2.monew.dto.PaginatedResponseDto;
-import com.part2.monew.dto.response.ArticleListResponseDto;
-import com.part2.monew.dto.FilterDto;
 import com.part2.monew.dto.RequestCursorDto;
-import com.part2.monew.dto.RestoreResultDto;
 import com.part2.monew.service.implement.NewsArticleService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -35,153 +29,139 @@ public class ArticleController {
         this.newsArticleService = newsArticleService;
     }
 
+    // 메인 검색 API (관심사, 출처, 날짜 필터 + 정렬 + 커서 기반 페이징)
     @GetMapping
-    public ResponseEntity<ArticleListResponseDto<NewsArticleResponseDto>> getArticles(
+    public ResponseEntity<PaginatedResponseDto<NewsArticleResponseDto>> getArticles(
         @RequestParam(value = "keyword", required = false) String keyword,
         @RequestParam(value = "interestId", required = false) String interestId,
         @RequestParam(value = "sourceIn", required = false) List<String> sourceIn,
         @RequestParam(value = "publishDateFrom", required = false) String publishDateFrom,
         @RequestParam(value = "publishDateTo", required = false) String publishDateTo,
-        @RequestParam(value = "orderBy") String orderBy,
-        @RequestParam(value = "direction") String direction,
+        @RequestParam(value = "orderBy", defaultValue = "publishDate") String orderBy,
+        @RequestParam(value = "direction", defaultValue = "DESC") String direction,
         @RequestParam(value = "cursor", required = false) String cursor,
         @RequestParam(value = "after", required = false) String after,
-        @RequestParam(value = "limit") Integer limit,
+        @RequestParam(value = "limit", defaultValue = "20") Integer limit,
         @RequestHeader(value = "Monew-Request-User-ID") String userId) {
         
         try {
-           
+            // 날짜 파싱
+            Timestamp publishDateFromTs = parseTimestamp(publishDateFrom);
+            Timestamp publishDateToTs = parseTimestamp(publishDateTo);
+            Timestamp afterTs = parseTimestamp(after);
             
-      
-            Timestamp publishDateFromTs = null;
-            Timestamp publishDateToTs = null;
-            Timestamp afterTs = null;
-            
-            if (publishDateFrom != null && !publishDateFrom.isEmpty()) {
-                publishDateFromTs = Timestamp.valueOf(LocalDateTime.parse(publishDateFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            }
-            if (publishDateTo != null && !publishDateTo.isEmpty()) {
-                publishDateToTs = Timestamp.valueOf(LocalDateTime.parse(publishDateTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            }
-            if (after != null && !after.isEmpty()) {
-                afterTs = Timestamp.valueOf(LocalDateTime.parse(after, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            }
-            
-            // UUID 파싱
+            // interestId를 UUID로 변환
             UUID interestUuid = null;
-            if (interestId != null && !interestId.isEmpty()) {
-                interestUuid = UUID.fromString(interestId);
+            if (interestId != null && !interestId.trim().isEmpty()) {
+                try {
+                    interestUuid = UUID.fromString(interestId);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().build();
+                }
             }
             
-            // 빈 문자열을 null로 변환 (조건 무시)
-            if (keyword != null && keyword.trim().isEmpty()) keyword = null;
-            if (orderBy != null && orderBy.trim().isEmpty()) orderBy = "publishDate";
-            if (direction != null && direction.trim().isEmpty()) direction = "DESC";
+         
+            FilterDto filterDto = new FilterDto(
+                keyword, 
+                interestUuid,
+                sourceIn, 
+                publishDateFromTs, 
+                publishDateToTs
+            );
             
-            // FilterDto와 RequestCursorDto 생성
-            FilterDto filterDto = new FilterDto(keyword, interestUuid, sourceIn, publishDateFromTs, publishDateToTs);
-            RequestCursorDto cursorDto = new RequestCursorDto(orderBy, direction, cursor, afterTs, null, limit);
+            RequestCursorDto cursorDto = new RequestCursorDto(
+                orderBy, 
+                direction, 
+                cursor, 
+                afterTs,
+                null, // nextCursorViewCount는 내부에서 계산
+                limit
+            );
             
-            // 실제 복잡한 서비스 호출
-            var result = newsArticleService.getArticlesForSwagger(filterDto, cursorDto, userId);
-            
-            System.out.println("조회 결과: " + result.getSize() + "개");
-            System.out.println("=== 복잡한 쿼리 실행 완료 ===");
+            PaginatedResponseDto<NewsArticleResponseDto> result = newsArticleService.getArticles(
+                filterDto, cursorDto, userId);
             
             return ResponseEntity.ok(result);
             
         } catch (Exception e) {
-            System.err.println("복잡한 쿼리 실행 오류: " + e.getMessage());
-            
-            // 오류 발생시 빈 응답 반환
-            ArticleListResponseDto errorResponse = ArticleListResponseDto.builder()
-                .content(List.of())
-                .nextCursor(null)
-                .nextAfter(null)
-                .size(0)
-                .totalElements(0L)
-                .hasNext(false)
-                .build();
-            
-            return ResponseEntity.ok(errorResponse);
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    @PostMapping("/{articleId}/article-views")
-    public ResponseEntity<String> registerArticleView(
+    // 조회수 증가 (기존 경로)
+    @PostMapping("/{articleId}/views")
+    public ResponseEntity<Void> incrementViewCount(
         @PathVariable String articleId,
         @RequestHeader(value = "Monew-Request-User-ID") String userId) {
         
         try {
-            System.out.println("=== 조회수 증가 시작 ===");
-            System.out.println("articleId: " + articleId);
-            System.out.println("userId: " + userId);
-            
             UUID articleUuid = UUID.fromString(articleId);
             UUID userUuid = UUID.fromString(userId);
             newsArticleService.incrementViewCount(articleUuid, userUuid);
-            
-            System.out.println("=== 조회수 증가 완료 ===");
-            return ResponseEntity.ok("조회수 증가 완료");
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.err.println("조회수 증가 오류: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("조회수 증가 오류: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint() {
-        try {
-            System.out.println("=== 테스트 엔드포인트 시작 ===");
-            
-            // 간단한 조회 테스트
-            var articles = newsArticleService.getNewsArticleRepository().findByIsDeletedFalse(
-                org.springframework.data.domain.PageRequest.of(0, 5)
-            );
-            
-            System.out.println("=== 테스트 엔드포인트 완료 ===");
-            return ResponseEntity.ok("Test endpoint 작동함! 총 " + articles.size() + "개 기사 발견");
-        } catch (Exception e) {
-            System.err.println("Test endpoint 오류: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Test endpoint 오류: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 뉴스 기사 복구
-     */
-    @GetMapping("/restore")
-    public ResponseEntity<List<RestoreResultDto>> restoreArticles(
-        @RequestParam("from") Timestamp from,
-        @RequestParam("to") Timestamp to) {
+    // 조회수 증가 (새로운 경로)
+    @PostMapping("/{articleId}/article-views")
+    public ResponseEntity<Void> incrementViewCountAlternative(
+        @PathVariable String articleId,
+        @RequestHeader(value = "Monew-Request-User-ID") String userId) {
         
-        List<RestoreResultDto> restoreResults = newsArticleService.restoreArticles(from, to);
-        return ResponseEntity.ok(restoreResults);
+        try {
+            UUID articleUuid = UUID.fromString(articleId);
+            UUID userUuid = UUID.fromString(userId);
+            newsArticleService.incrementViewCount(articleUuid, userUuid);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-         
-     @GetMapping("/sources")
-     public ResponseEntity<List<String>> getSource() {
-         List<String> sources = newsArticleService.getNewsSources();
-         return ResponseEntity.ok(sources);
-     }
+    // 뉴스 소스 목록 조회
+    @GetMapping("/sources")
+    public ResponseEntity<List<String>> getSources() {
+        List<String> sources = newsArticleService.getNewsSources();
+        return ResponseEntity.ok(sources);
+    }
 
+    // 기사 삭제
     @DeleteMapping("/{articleId}")
-    public ResponseEntity<Void> delete(@PathVariable String articleId) {
-        UUID uuid = UUID.fromString(articleId);
-        newsArticleService.softDeleteArticle(uuid);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteArticle(@PathVariable String articleId) {
+        try {
+            UUID uuid = UUID.fromString(articleId);
+            newsArticleService.softDeleteArticle(uuid);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    //하드
-    @DeleteMapping("/{articleId}/hard")
-    public ResponseEntity<Void> hardDelete(@PathVariable String articleId) {
-        UUID uuid = UUID.fromString(articleId);
-        newsArticleService.hardDeleteArticle(uuid);
-        return ResponseEntity.noContent().build();
+    private Timestamp parseTimestamp(String dateTimeString) {
+        if (dateTimeString == null || dateTimeString.trim().isEmpty()) {
+            return null;
+        }
+        
+        try {
+            // ISO 8601 형식 (타임존 포함) 시도: 2025-06-05T01:40:00.000+00:00
+            OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTimeString);
+            return Timestamp.from(offsetDateTime.toInstant());
+        } catch (DateTimeParseException e1) {
+            try {
+                // ISO_INSTANT 형식 시도: 2025-06-05T01:40:00.000Z
+                Instant instant = Instant.parse(dateTimeString);
+                return Timestamp.from(instant);
+            } catch (DateTimeParseException e2) {
+                try {
+                    // LocalDateTime 형식 시도: 2025-06-05T01:40:00
+                    LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    return Timestamp.valueOf(localDateTime);
+                } catch (DateTimeParseException e3) {
+                    throw new IllegalArgumentException("Invalid date format: " + dateTimeString, e3);
+                }
+            }
+        }
     }
-
-    
 }

@@ -7,7 +7,27 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:test}
+    active: prod
+  
+  # PostgreSQL 데이터베이스 설정
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
 
 server:
   port: ${APP_PORT:8080}
@@ -25,10 +45,10 @@ monew:
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:./monew-storage}
     s3:
-      accessKeyId: ${AWS_ACCESS_KEY_ID}
-      secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
-      region: ${AWS_S3_REGION}
-      bucket: ${AWS_S3_BUCKET}
+      accessKeyId: ${AWS_ACCESS_KEY_ID:dummy-access-key}
+      secretAccessKey: ${AWS_SECRET_ACCESS_KEY:dummy-secret-key}
+      region: ${AWS_S3_REGION:ap-northeast-2}
+      bucket: ${AWS_S3_BUCKET:monewbackup}
   
   
   news-providers:
@@ -196,6 +216,41 @@ monew:
       type: "rss"
       name: "연합뉴스TV 날씨"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/weather/feed/"
+      enabled: true
+    sbs-news:
+      type: "rss"
+      name: "SBS 뉴스"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01"
+      enabled: true
+    sbs-politics:
+      type: "rss"
+      name: "SBS 정치"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=07"
+      enabled: true
+    sbs-economy:
+      type: "rss"
+      name: "SBS 경제"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02"
+      enabled: true
+    sbs-society:
+      type: "rss"
+      name: "SBS 사회"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08"
+      enabled: true
+    sbs-international:
+      type: "rss"
+      name: "SBS 국제"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=09"
+      enabled: true
+    sbs-sports:
+      type: "rss"
+      name: "SBS 스포츠"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=14"
+      enabled: true
+    sbs-entertainment:
+      type: "rss"
+      name: "SBS 연예"
+      feed-url: "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=15"
       enabled: true
       
   batch:

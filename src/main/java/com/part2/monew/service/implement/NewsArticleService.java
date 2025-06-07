@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -79,105 +80,133 @@ public class NewsArticleService {
         RequestCursorDto cursorDto, String userId) {
         logger.info("뉴스 기사 조회 요청 - 사용자 ID: {}, 필터: {}, 커서: {}", userId, filterDto, cursorDto);
 
-        int fetchLimit = cursorDto.limit() + 1; // hasNext 확인용 +1
         List<NewsArticle> articles;
-        long totalElements = 0;
-
-        // 커서 값 준비
-        Timestamp cursorTimestamp = null;
-        Long cursorLong = null;
-
-        if (cursorDto.cursor() != null && !cursorDto.cursor().isEmpty()) {
-            // orderBy에 따라 커서 값 타입 결정
-            if ("publishDate".equals(cursorDto.orderBy())) {
-                cursorTimestamp = cursorDto.after(); // Timestamp 타입
-            } else if ("viewCount".equals(cursorDto.orderBy())) {
-                cursorLong = cursorDto.cursorViewCount(); // Long 타입
-            } else if ("commentCount".equals(cursorDto.orderBy())) {
-                try {
-                    cursorLong = Long.parseLong(cursorDto.cursor()); // String을 Long으로 변환
-                } catch (NumberFormatException e) {
-                    logger.warn("commentCount 커서 값 파싱 실패: {}", cursorDto.cursor());
-                }
-            }
-        }
-
-        // orderBy 값을 Repository 쿼리에 맞게 변환
-        String repositoryOrderBy = cursorDto.orderBy();
-        if ("publishDate".equals(repositoryOrderBy)) {
-            repositoryOrderBy = "publishedDate";
-        }
 
         try {
-            Timestamp startTimestamp = filterDto.publishDateFrom();
-            Timestamp endTimestamp = filterDto.publishDateTo();
+            // 커서 기반 페이징을 위해 limit+1로 조회
+            int fetchLimit = cursorDto.limit() + 1;
+            
+            logger.info("검색 시작 - keyword: {}, source: {}, orderBy: {}, direction: {}, cursor: {}",
+                filterDto.keyword(), getFirstSource(filterDto.sourceIn()), 
+                cursorDto.orderBy(), cursorDto.direction(), cursorDto.cursor());
 
-            // 커서 값이 있는지 확인 (첫 페이지인지 다음 페이지인지 판단)
-            boolean isFirstPage = (cursorDto.cursor() == null || cursorDto.cursor().isEmpty());
+            logger.info("정렬 파라미터 확인 - orderBy: '{}', direction: '{}', orderBy=='commentCount': {}", 
+                cursorDto.orderBy(), cursorDto.direction(), "commentCount".equals(cursorDto.orderBy()));
 
-            if (isFirstPage) {
-                // 첫 페이지 조회
-                logger.info("첫 페이지 검색 시작 - keyword: {}, source: {}, orderBy: {}",
-                    filterDto.keyword(), getFirstSource(filterDto.sourceIn()), cursorDto.orderBy());
-
-                Pageable pageable = PageRequest.of(0, fetchLimit);
-                articles = newsArticleRepository.findNewsArticlesFirstPage(filterDto.keyword(),
-                    null, // interestName - 현재 사용하지 않음
-                    getFirstSource(filterDto.sourceIn()), startTimestamp, endTimestamp,
-                    repositoryOrderBy, cursorDto.direction(), fetchLimit);
-
-                logger.info("첫 페이지 검색 완료 - 결과: {}개", articles.size());
-            } else {
-                // 커서 기반 다음 페이지 조회
-                logger.info("커서 기반 검색 시작 - keyword: {}, source: {}, orderBy: {}, cursor: {}",
-                    filterDto.keyword(), getFirstSource(filterDto.sourceIn()), cursorDto.orderBy(),
-                    cursorDto.cursor());
-
-                articles = newsArticleRepository.findNewsArticlesWithComplexSearch(
-                    filterDto.keyword(), null, // interestName - 현재 사용하지 않음
-                    getFirstSource(filterDto.sourceIn()), startTimestamp, endTimestamp,
-                    repositoryOrderBy, cursorDto.direction(), cursorTimestamp, cursorLong,
-                    fetchLimit);
-
-                logger.info("커서 기반 검색 완료 - 결과: {}개", articles.size());
+            // 정렬 조건에 따라 적절한 쿼리 호출
+            switch (cursorDto.orderBy()) {
+                case "commentCount":
+                    logger.info("댓글 수 정렬 쿼리 호출: direction={}", cursorDto.direction());
+                    articles = newsArticleRepository.findArticlesSortedByCommentCount(
+                        filterDto.keyword(),
+                        getFirstSource(filterDto.sourceIn()),
+                        filterDto.publishDateFrom(),
+                        filterDto.publishDateTo(),
+                        cursorDto.direction(),
+                        cursorDto.cursor(),
+                        fetchLimit
+                    );
+                    break;
+                case "viewCount":
+                    logger.info("조회 수 정렬 쿼리 호출: direction={}", cursorDto.direction());
+                    articles = newsArticleRepository.findArticlesSortedByViewCount(
+                        filterDto.keyword(),
+                        getFirstSource(filterDto.sourceIn()),
+                        filterDto.publishDateFrom(),
+                        filterDto.publishDateTo(),
+                        cursorDto.direction(),
+                        cursorDto.cursor(),
+                        fetchLimit
+                    );
+                    break;
+                case "publishDate":
+                default:
+                    logger.info("날짜 정렬 쿼리 호출: direction={}", cursorDto.direction());
+                    articles = newsArticleRepository.findArticlesSortedByPublishDate(
+                        filterDto.keyword(),
+                        getFirstSource(filterDto.sourceIn()),
+                        filterDto.publishDateFrom(),
+                        filterDto.publishDateTo(),
+                        cursorDto.direction(),
+                        cursorDto.cursor(),
+                        fetchLimit
+                    );
+                    break;
             }
+
+            logger.info("검색 완료 - 결과: {}개", articles.size());
 
         } catch (Exception e) {
             logger.error("뉴스 기사 검색 중 오류 발생", e);
             throw new ArticleSearchFailedException();
         }
 
-        // hasNext 여부 확인 및 결과 조정
+        // 커서 기반 페이징 처리
         boolean hasNext = articles.size() > cursorDto.limit();
-        List<NewsArticle> limitedArticles =
-            hasNext ? articles.subList(0, cursorDto.limit()) : articles;
-
-        // 다음 커서 값 생성
         String nextCursor = null;
         Timestamp nextAfter = null;
         Long nextCursorViewCount = null;
 
-        if (hasNext && !limitedArticles.isEmpty()) {
-            NewsArticle lastArticle = limitedArticles.get(limitedArticles.size() - 1);
-            nextCursor = lastArticle.getId().toString();
+        // hasNext가 true면 마지막 요소는 다음 페이지 표시용이므로 제거
+        if (hasNext) {
+            articles = articles.subList(0, cursorDto.limit());
+        }
+
+        // 응답 DTO 변환을 위해 먼저 모든 기사의 실제 댓글 수를 한 번에 조회 (N+1 문제 해결)
+        List<UUID> articleIds = articles.stream().map(NewsArticle::getId).collect(Collectors.toList());
+        Map<UUID, Long> commentCountMap = new HashMap<>();
+        
+        if (!articleIds.isEmpty()) {
+            List<Object[]> commentCounts = commentRepository.countActiveCommentsByArticleIds(articleIds);
+            for (Object[] result : commentCounts) {
+                UUID articleId = (UUID) result[0];
+                Long count = ((Number) result[1]).longValue();
+                commentCountMap.put(articleId, count);
+            }
+        }
+
+        // 다음 커서 값 계산
+        if (hasNext && !articles.isEmpty()) {
+            NewsArticle lastArticle = articles.get(articles.size() - 1);
+            
+            switch (cursorDto.orderBy()) {
+                case "publishDate":
+                    nextCursor = lastArticle.getPublishedDate().toString();
+                    break;
+                case "viewCount":
+                    nextCursor = String.valueOf(lastArticle.getViewCount());
+                    nextCursorViewCount = lastArticle.getViewCount();
+                    break;
+                case "commentCount":
+                    // 실제 댓글 수를 Map에서 가져와서 커서로 사용
+                    Long actualCommentCount = commentCountMap.getOrDefault(lastArticle.getId(), 0L);
+                    nextCursor = String.valueOf(actualCommentCount);
+                    break;
+                default:
+                    nextCursor = lastArticle.getPublishedDate().toString();
+            }
+            
             nextAfter = lastArticle.getPublishedDate();
-            nextCursorViewCount = lastArticle.getViewCount();
         }
 
         // 응답 DTO 변환 (실제 댓글 수 포함)
         Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
-        List<NewsArticleResponseDto> responseDtos = limitedArticles.stream().map(article -> {
-            // 실제 댓글 수 계산
-            Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
-                article.getId());
+        List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
+            // 실제 댓글 수를 Map에서 가져오기 (단일 조회로 이미 모든 댓글 수 로드됨)
+            Long actualCommentCount = commentCountMap.getOrDefault(article.getId(), 0L);
             return newsArticleMapper.toDto(article,
                 viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
         }).collect(Collectors.toList());
 
-        return PaginatedResponseDto.<NewsArticleResponseDto>builder().content(responseDtos)
-            .nextCursor(nextCursor).nextAfter(nextAfter).nextCursorViewCount(nextCursorViewCount)
-            .size(limitedArticles.size()).totalElements(limitedArticles.size())
-            .hasNext(hasNext).build();
+        return PaginatedResponseDto.<NewsArticleResponseDto>builder()
+            .content(responseDtos)
+            .nextCursor(nextCursor)
+            .nextAfter(nextAfter)
+            .nextCursorViewCount(nextCursorViewCount)
+            .size(responseDtos.size())
+            .totalElements((long) responseDtos.size()) // 커서 기반에서는 정확한 전체 개수 계산이 어려움
+            .hasNext(hasNext)
+            .build();
     }
 
     public List<String> getNewsSources() {
@@ -480,14 +509,13 @@ public class NewsArticleService {
 
     public PaginatedResponseDto<NewsArticleResponseDto> getRecentArticles(int limit,
         String userId) {
-        Pageable pageable = PageRequest.of(0, limit);
-        List<NewsArticle> articles = newsArticleRepository.findRecentNews(pageable);
+        // 통합 메서드 사용: 최근 뉴스 = 날짜 내림차순 정렬
+        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(
+            null, null, null, null, "publishDate", "DESC", null, limit);
 
-        // TODO: viewedByMe 로직 구현 필요
         Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
 
         List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            // 실제 댓글 수 계산
             Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
                 article.getId());
             return newsArticleMapper.toDto(article,
@@ -501,17 +529,15 @@ public class NewsArticleService {
 
     public PaginatedResponseDto<NewsArticleResponseDto> searchArticlesByKeyword(String keyword,
         int limit, String userId) {
-        Pageable pageable = PageRequest.of(0, limit);
-        List<NewsArticle> articles = newsArticleRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(
-            keyword, pageable);
+        // 통합 메서드 사용: 키워드 검색 + 날짜 내림차순 정렬
+        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(
+            keyword, null, null, null, "publishDate", "DESC", null, limit);
 
         logger.info("키워드 '{}' 검색 결과: {}개 기사", keyword, articles.size());
 
-        // TODO: viewedByMe 로직 구현 필요
         Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
 
         List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            // 실제 댓글 수 계산
             Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
                 article.getId());
             return newsArticleMapper.toDto(article,
@@ -526,8 +552,6 @@ public class NewsArticleService {
     public PaginatedResponseDto<NewsArticleResponseDto> searchArticlesByKeywordAdvanced(
         String keyword, String orderBy, String direction, int limit, String userId) {
 
-        Pageable pageable = PageRequest.of(0, limit);
-
         // 기본값 설정
         if (orderBy == null || orderBy.trim().isEmpty()) {
             orderBy = "publishDate";
@@ -541,8 +565,8 @@ public class NewsArticleService {
             keyword = null;
         }
 
-        List<NewsArticle> articles = newsArticleRepository.searchArticlesByKeywordAdvanced(keyword,
-            orderBy, direction, pageable);
+        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(keyword,
+            null, null, null, orderBy, direction, null, limit);
 
         logger.info("향상된 키워드 '{}' 검색 결과: {}개 기사 (정렬: {} {})", keyword, articles.size(), orderBy,
             direction);
