@@ -27,7 +27,6 @@ public class BatchController {
     @PostMapping("/news-collection/execute")
     public ResponseEntity<Map<String, Object>> executeNewsCollection() {
         try {
-            log.info("수동 뉴스 수집 배치 실행 요청");
 
             springBatch.executeNewsCollectionBatch();
             
@@ -38,8 +37,7 @@ public class BatchController {
             ));
             
         } catch (Exception e) {
-            log.error("뉴스 수집 배치 실행 중 오류 발생", e);
-            
+
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "뉴스 수집 배치 실행 중 오류가 발생했습니다: " + e.getMessage(),
@@ -51,7 +49,6 @@ public class BatchController {
     @PostMapping("/news-backup/execute")
     public ResponseEntity<Map<String, Object>> executeNewsBackup() {
         try {
-            log.info("수동 뉴스 백업 배치 실행 요청");
 
             newsArticleService.executeDailyNewsBackupBatch();
             
@@ -62,8 +59,7 @@ public class BatchController {
             ));
             
         } catch (Exception e) {
-            log.error("뉴스 백업 배치 실행 중 오류 발생", e);
-            
+
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "뉴스 백업 배치 실행 중 오류가 발생했습니다: " + e.getMessage(),
@@ -76,7 +72,6 @@ public class BatchController {
     public ResponseEntity<Map<String, Object>> backupNewsByDate(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
-            log.info("특정 날짜 뉴스 백업 실행 요청: {}", date);
 
             newsArticleService.backupDataByDate(date);
             
@@ -88,8 +83,7 @@ public class BatchController {
             ));
             
         } catch (Exception e) {
-            log.error("특정 날짜 뉴스 백업 실행 중 오류 발생: {}", date, e);
-            
+
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", String.format("%s 날짜의 뉴스 백업 중 오류가 발생했습니다: %s", date, e.getMessage()),
