@@ -26,6 +26,7 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findTop11ByUserIdAndConfirmedFalseAndCreatedAtLessThanOrderByCreatedAtDesc(UUID userId, Timestamp cursor);
     @Modifying
     @Query("DELETE FROM Notification n WHERE n.confirmed = true AND n.updatedAt < :oneWeekAgo")
+    void deleteConfirmedNotificationsBefore(@Param("oneWeekAgo") Timestamp oneWeekAgo);
 
     long countByUserIdAndConfirmedFalse(UUID userId);
 
