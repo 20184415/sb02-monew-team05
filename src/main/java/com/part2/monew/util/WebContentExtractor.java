@@ -9,7 +9,9 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * 웹 페이지에서 기사 본문을 추출하는 유틸리티 클래스
+ */
 @Slf4j
 public class WebContentExtractor {
 
@@ -73,10 +75,6 @@ public class WebContentExtractor {
             return "";
         }
     }
-
-    /**
-     * HTML Document에서 본문 텍스트를 추출합니다.
-     */
     private static String extractContentFromDocument(Document doc) {
         // 순서대로 선택자를 시도하여 가장 적절한 내용 찾기
         for (String selector : CONTENT_SELECTORS) {
