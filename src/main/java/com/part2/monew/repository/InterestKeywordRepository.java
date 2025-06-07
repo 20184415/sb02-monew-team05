@@ -21,7 +21,7 @@ public interface InterestKeywordRepository extends JpaRepository<InterestKeyword
         SELECT k.name 
         FROM interests_keywords ik
         JOIN interests i ON ik.interest_id = i.interest_id
-        JOIN keywords k ON ik.keyword_id = k.keyword_id
+        JOIN kewords k ON ik.keyword_id = k.keyword_id
         WHERE i.name = :interestName
         """, nativeQuery = true)
     List<String> findKeywordsByInterestName(@Param("interestName") String interestName);
@@ -34,7 +34,7 @@ public interface InterestKeywordRepository extends JpaRepository<InterestKeyword
         SELECT i.name as interest_name, k.name as keyword_name
         FROM interests_keywords ik
         JOIN interests i ON ik.interest_id = i.interest_id
-        JOIN keywords k ON ik.keyword_id = k.keyword_id
+        JOIN kewords k ON ik.keyword_id = k.keyword_id
         ORDER BY i.name, k.name
         """, nativeQuery = true)
     List<Object[]> findAllInterestKeywordMappings();

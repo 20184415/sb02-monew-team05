@@ -35,10 +35,20 @@ class CommentServiceIntegrationTest {
     @DisplayName("댓글 목록을 커서 기반으로 조회한다")
     void testFindCommentsByArticleIdWithoutForLoop() {
         // given
-        User user = new User("test@example.com", "pw", "nickname", true, Timestamp.from(Instant.now()));
+        User user = User.builder()
+                .nickname("nickname")
+                .email("test@example.com")
+                .password("pw")
+                .build();
         em.persist(user);
 
-        NewsArticle article = new NewsArticle("https://foo.com", "제목", Timestamp.from(Instant.now()), "요약", 0L);
+        NewsArticle article = NewsArticle.builder()
+                .sourceUrl("https://foo.com")
+                .title("제목")
+                .publishedDate(Timestamp.from(Instant.now()))
+                .summary("요약")
+                .viewCount(0L)
+                .build();
         em.persist(article);
 
         em.persist(CommentsManagement.create(user, article, "내용1", 0, Timestamp.from(Instant.now().plus(1, ChronoUnit.DAYS))));

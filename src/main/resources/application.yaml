@@ -76,37 +76,37 @@ monew:
       type: "rss"
       name: "한국경제 국제"
       feed-url: "https://www.hankyung.com/feed/international"
-      enabled: false
+      enabled: true
     hankyung-society:
       type: "rss"
       name: "한국경제 사회"
       feed-url: "https://www.hankyung.com/feed/society"
-      enabled: false
+      enabled: true
     hankyung-life:
       type: "rss"
       name: "한국경제 생활"
       feed-url: "https://www.hankyung.com/feed/life"
-      enabled: false
+      enabled: true
     hankyung-opinion:
       type: "rss"
       name: "한국경제 오피니언"
       feed-url: "https://www.hankyung.com/feed/opinion"
-      enabled: false
+      enabled: true
     hankyung-sports:
       type: "rss"
       name: "한국경제 스포츠"
       feed-url: "https://www.hankyung.com/feed/sports"
-      enabled: false
+      enabled: true
     hankyung-entertainment:
       type: "rss"
       name: "한국경제 연예"
       feed-url: "https://www.hankyung.com/feed/entertainment"
-      enabled: false
+      enabled: true
     hankyung-video:
       type: "rss"
       name: "한국경제 VIDEO"
       feed-url: "https://www.hankyung.com/feed/video"
-      enabled: false
+      enabled: true
     chosun-politics:
       type: "rss"
       name: "조선일보 정치"
@@ -121,32 +121,32 @@ monew:
       type: "rss"
       name: "조선일보 사회"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/national/?outputType=xml"
-      enabled: false
+      enabled: true
     chosun-international:
       type: "rss"
       name: "조선일보 국제"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/international/?outputType=xml"
-      enabled: false
+      enabled: true
     chosun-culture:
       type: "rss"
       name: "조선일보 문화/라이프"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/culture-life/?outputType=xml"
-      enabled: false
+      enabled: true
     chosun-opinion:
       type: "rss"
       name: "조선일보 오피니언"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/opinion/?outputType=xml"
-      enabled: false
+      enabled: true
     chosun-sports:
       type: "rss"
       name: "조선일보 스포츠"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/sports/?outputType=xml"
-      enabled: false
+      enabled: true
     chosun-entertainment:
       type: "rss"
       name: "조선일보 연예"
       feed-url: "https://www.chosun.com/arc/outboundfeeds/rss/category/entertainments/?outputType=xml"
-      enabled: false
+      enabled: true
     yonhap-latest:
       type: "rss"
       name: "연합뉴스TV 최신"
@@ -156,12 +156,12 @@ monew:
       type: "rss"
       name: "연합뉴스TV 헤드라인"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/headline/feed/"
-      enabled: false
+      enabled: true
     yonhap-politics:
       type: "rss"
       name: "연합뉴스TV 정치"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/politics/feed/"
-      enabled: false
+      enabled: true
     yonhap-economy:
       type: "rss"
       name: "연합뉴스TV 경제"
@@ -171,32 +171,32 @@ monew:
       type: "rss"
       name: "연합뉴스TV 사회"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/society/feed/"
-      enabled: false
+      enabled: true
     yonhap-local:
       type: "rss"
       name: "연합뉴스TV 지역"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/local/feed/"
-      enabled: false
+      enabled: true
     yonhap-international:
       type: "rss"
       name: "연합뉴스TV 세계"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/international/feed/"
-      enabled: false
+      enabled: true
     yonhap-culture:
       type: "rss"
       name: "연합뉴스TV 문화·연예"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/culture/feed/"
-      enabled: false
+      enabled: true
     yonhap-sports:
       type: "rss"
       name: "연합뉴스TV 스포츠"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/sports/feed/"
-      enabled: false
+      enabled: true
     yonhap-weather:
       type: "rss"
       name: "연합뉴스TV 날씨"
       feed-url: "http://www.yonhapnewstv.co.kr/category/news/weather/feed/"
-      enabled: false
+      enabled: true
       
   batch:
     news-collection:
