@@ -48,7 +48,6 @@ public enum ErrorCode {
   COMMENT_IS_ACTIVE(HttpStatus.BAD_REQUEST, "C004", "댓글 삭제 실패하였습니다."),
 
   // Notification Errors (Nxxx)
-  NOTIFICATION_NO_PARSING(HttpStatus.NOT_FOUND, "N001", "Cursor 값이 잘못된 형식입니다.");
 
 
   private final HttpStatus status;
