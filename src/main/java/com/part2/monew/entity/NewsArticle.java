@@ -1,6 +1,7 @@
 package com.part2.monew.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.*;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "news_articles")
@@ -62,13 +64,16 @@ public class NewsArticle {
 
 
     @OneToMany(mappedBy = "newsArticle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<CommentsManagement> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "newsArticle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private Set<InterestNewsArticle> interestMappings = new HashSet<>();
 
 
     @OneToMany(mappedBy = "newsArticle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ActivityDetail> views = new ArrayList<>();
 
     public void softDelete() {

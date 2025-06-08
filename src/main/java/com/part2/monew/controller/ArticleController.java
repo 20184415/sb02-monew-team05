@@ -1,10 +1,11 @@
 package com.part2.monew.controller;
 
-import com.part2.monew.dto.FilterDto;
-import com.part2.monew.dto.NewsArticleResponseDto;
-import com.part2.monew.dto.PaginatedResponseDto;
-import com.part2.monew.dto.RequestCursorDto;
-import com.part2.monew.service.implement.NewsArticleService;
+
+import com.part2.monew.dto.request.FilterDto;
+import com.part2.monew.dto.request.RequestCursorDto;
+import com.part2.monew.dto.response.NewsArticleResponseDto;
+import com.part2.monew.dto.response.PaginatedResponseDto;
+import com.part2.monew.service.impl.NewsArticleService;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
