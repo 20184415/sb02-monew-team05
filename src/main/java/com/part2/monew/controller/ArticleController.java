@@ -1,23 +1,27 @@
 package com.part2.monew.controller;
 
-import com.part2.monew.dto.ArticleSearchRequestDto;
 import com.part2.monew.dto.FilterDto;
 import com.part2.monew.dto.NewsArticleResponseDto;
 import com.part2.monew.dto.PaginatedResponseDto;
 import com.part2.monew.dto.RequestCursorDto;
 import com.part2.monew.service.implement.NewsArticleService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/articles")

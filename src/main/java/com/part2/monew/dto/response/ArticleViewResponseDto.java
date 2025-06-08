@@ -1,12 +1,11 @@
-package com.part2.monew.dto;
+package com.part2.monew.dto.response;
 
+import java.sql.Timestamp;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.sql.Timestamp;
-import java.util.UUID;
 
 @Getter
 @Builder

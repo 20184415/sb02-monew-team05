@@ -1,7 +1,6 @@
-package com.part2.monew.dto;
+package com.part2.monew.dto.request;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.RequestParam;
 

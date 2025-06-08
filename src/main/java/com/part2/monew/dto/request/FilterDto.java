@@ -1,9 +1,10 @@
-package com.part2.monew.dto;
+package com.part2.monew.dto.request;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
+
 //검색 필터 조건
 public record FilterDto(
     @RequestParam(value = "keyword", required = false)

@@ -1,12 +1,11 @@
-package com.part2.monew.dto;
+package com.part2.monew.dto.request;
 
+import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.sql.Timestamp;
 
 @Getter
 @Setter
