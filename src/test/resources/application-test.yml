@@ -29,3 +29,6 @@ monew:
       secretAccessKey: test-secret-key
       region: ap-northeast-2
       bucket: test-bucket
+  cloud:
+    slack:
+      webhook-url: ${WEBHOOK-URL}
