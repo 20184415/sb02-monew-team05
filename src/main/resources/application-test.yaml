@@ -44,6 +44,9 @@ monew:
       secretAccessKey: ${AWS_SECRET_ACCESS_KEY:your-secret-access-key}
       region: ap-northeast-2
       bucket: monewbackup
+  cloud:
+    slack:
+      webhook-url: ${WEBHOOK-URL}
   news-providers:
     providers:
       naver-api:

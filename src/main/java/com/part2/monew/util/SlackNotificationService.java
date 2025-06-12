@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SlackNotificationService {
 
-  @Value("https://hooks.slack.com/services/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")
+  @Value("${monew.cloud.slack.webhook-url}")
   private String slackWebhookUrl;
 
   private final RestTemplate restTemplate;
