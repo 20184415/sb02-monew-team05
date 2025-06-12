@@ -14,6 +14,7 @@ import com.part2.monew.entity.NewsArticle;
 import com.part2.monew.entity.User;
 import com.part2.monew.global.exception.article.ArticleDeleteFailedException;
 import com.part2.monew.global.exception.article.ArticleNotFoundException;
+import com.part2.monew.global.exception.article.ArticleRestoreFailedException;
 import com.part2.monew.global.exception.article.ArticleSearchFailedException;
 import com.part2.monew.global.exception.user.UserNotFoundException;
 import com.part2.monew.mapper.NewsArticleMapper;
@@ -22,6 +23,7 @@ import com.part2.monew.repository.CommentRepository;
 import com.part2.monew.repository.NewsArticleRepository;
 import com.part2.monew.repository.UserRepository;
 import com.part2.monew.service.NewsBackupS3Manager;
+import com.part2.monew.util.DateTimeUtil;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -82,7 +84,6 @@ public class NewsArticleService {
         int effectiveLimit = cursorDto.limit() > 0 ? cursorDto.limit() : 20;
 
         try {
-            // 커서 기반 페이징을 위해 limit+1로 조회
             int fetchLimit = effectiveLimit + 1;
             
             logger.info("검색 시작 - keyword: {}, source: {}, orderBy: {}, direction: {}, cursor: {}, effectiveLimit: {}",
@@ -90,29 +91,34 @@ public class NewsArticleService {
                 cursorDto.orderBy(), cursorDto.direction(), cursorDto.cursor(), effectiveLimit);
 
 
-            // 정렬 조건에 따라 적절한 쿼리 호출
             switch (cursorDto.orderBy()) {
                 case "commentCount":
-                    logger.info("댓글 수 정렬 QueryDSL 쿼리 호출: direction={}", cursorDto.direction());
-                    articles = newsArticleRepository.findArticlesSortedByCommentCount(
+                    logger.info("댓글 수 정렬 복합 커서 쿼리 호출: direction={}, cursor={}, after={}", 
+                        cursorDto.direction(), cursorDto.cursor(), cursorDto.after());
+                    articles = newsArticleRepository.findArticlesWithFiltersAndSortingComposite(
                         filterDto.keyword(),
                         getFirstSource(filterDto.sourceIn()),
                         filterDto.publishDateFrom(),
                         filterDto.publishDateTo(),
+                        cursorDto.orderBy(),
                         cursorDto.direction(),
                         cursorDto.cursor(),
+                        cursorDto.after(),
                         fetchLimit
                     );
                     break;
                 case "viewCount":
-                    logger.info("조회 수 정렬 쿼리 호출: direction={}", cursorDto.direction());
-                    articles = newsArticleRepository.findArticlesSortedByViewCount(
+                    logger.info("조회 수 정렬 복합 커서 쿼리 호출: direction={}, cursor={}, after={}", 
+                        cursorDto.direction(), cursorDto.cursor(), cursorDto.after());
+                    articles = newsArticleRepository.findArticlesWithFiltersAndSortingComposite(
                         filterDto.keyword(),
                         getFirstSource(filterDto.sourceIn()),
                         filterDto.publishDateFrom(),
                         filterDto.publishDateTo(),
+                        cursorDto.orderBy(),
                         cursorDto.direction(),
                         cursorDto.cursor(),
+                        cursorDto.after(),
                         fetchLimit
                     );
                     break;
@@ -187,11 +193,13 @@ public class NewsArticleService {
 
         // 응답 DTO 변환 (실제 댓글 수 포함)
         Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
-        List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            Long actualCommentCount = commentCountMap.getOrDefault(article.getId(), 0L);
-            return newsArticleMapper.toDto(article,
-                viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
-        }).collect(Collectors.toList());
+        List<NewsArticleResponseDto> responseDtos = articles.stream()
+            .map(article -> {
+                Long actualCommentCount = commentCountMap.getOrDefault(article.getId(), 0L);
+                return newsArticleMapper.toDto(article,
+                    viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
+            })
+            .collect(Collectors.toList());
 
         return PaginatedResponseDto.<NewsArticleResponseDto>builder()
             .content(responseDtos)
@@ -225,10 +233,6 @@ public class NewsArticleService {
         }
     }
 
-    public NewsArticle getArticleById(UUID articleId) {
-        return newsArticleRepository.findActiveById(articleId)
-            .orElseThrow(() -> new ArticleNotFoundException());
-    }
 
 
     @Transactional
@@ -261,81 +265,8 @@ public class NewsArticleService {
     }
 
 
-    public boolean existsActiveArticle(UUID articleId) {
-        return newsArticleRepository.findActiveById(articleId).isPresent();
-    }
 
 
-    @Transactional
-    public List<RestoreResultDto> restoreArticles(Timestamp from, Timestamp to) {
-        logger.info("뉴스 기사 복구 요청: {} ~ {}", from, to);
-
-        List<RestoreResultDto> restoreResults = new ArrayList<>();
-        List<UUID> allRestoredIds = new ArrayList<>();
-
-        LocalDate fromDate = from.toLocalDateTime().toLocalDate();
-        LocalDate toDate = to.toLocalDateTime().toLocalDate();
-
-        for (LocalDate date = fromDate; !date.isAfter(toDate); date = date.plusDays(1)) {
-            String s3Key = newsBackupS3Manager.getBackupFileKey(date);
-            List<UUID> dailyRestoredIds = new ArrayList<>();
-
-            try (InputStream backupStream = newsBackupS3Manager.downloadNewsBackup(s3Key)) {
-                if (backupStream == null) {
-                    logger.warn("{} 날짜의 백업 파일이 S3에 없습니다. Key: {}", date, s3Key);
-                    continue;
-                }
-
-                List<NewsArticle> articlesFromBackup = objectMapper.readValue(backupStream,
-                    new TypeReference<List<NewsArticle>>() {
-                    });
-
-                if (articlesFromBackup != null && !articlesFromBackup.isEmpty()) {
-                    logger.info("{} 날짜의 백업에서 {}개 기사 로드됨", date, articlesFromBackup.size());
-
-                    for (NewsArticle article : articlesFromBackup) {
-                        // 날짜 범위 필터링
-                        if (article.getPublishedDate() != null) {
-                            Timestamp articleTimestamp = article.getPublishedDate();
-                            if (articleTimestamp.before(from) || articleTimestamp.after(to)) {
-                                continue;
-                            }
-                        }
-
-                        // DB에 이미 존재하는지 확인 (sourceUrl 기준)
-                        if (!newsArticleRepository.existsBySourceUrl(article.getSourceUrl())) {
-                            NewsArticle newArticle = NewsArticle.builder()
-                                .sourceIn(article.getSourceIn()).sourceUrl(article.getSourceUrl())
-                                .title(article.getTitle()).publishedDate(article.getPublishedDate())
-                                .summary(article.getSummary()).viewCount(article.getViewCount())
-                                .commentCount(article.getCommentCount())
-                                .isDeleted(false) // 복구된 기사는 활성 상태
-                                .build();
-
-                            NewsArticle savedArticle = newsArticleRepository.save(newArticle);
-                            dailyRestoredIds.add(savedArticle.getId());
-                            allRestoredIds.add(savedArticle.getId());
-                        }
-                    }
-                }
-
-                // 일일 복구 결과 추가 (복구된 기사가 있는 경우에만)
-                if (!dailyRestoredIds.isEmpty()) {
-                    RestoreResultDto dailyResult = RestoreResultDto.builder()
-                        .restoreDate(new Timestamp(System.currentTimeMillis()))
-                        .restoredArticleIds(dailyRestoredIds)
-                        .restoredArticleCount((long) dailyRestoredIds.size()).build();
-                    restoreResults.add(dailyResult);
-                }
-
-            } catch (Exception e) {
-                logger.error("{} 날짜의 백업 복구 중 오류 발생", date, e);
-            }
-        }
-
-        logger.info("뉴스 복구 완료. 총 {}개 기사 복구됨", allRestoredIds.size());
-        return restoreResults;
-    }
 
     @Transactional
     public void restoreDataByDateRange(String fromDate, String toDate) {
@@ -389,15 +320,66 @@ public class NewsArticleService {
             toDate);
     }
 
+    @Transactional
+    public int restoreFromLatestBackup() {
+        logger.info("최신 백업에서 삭제된 기사 복구 시작");
+        
+        try {
+            String latestBackupKey = newsBackupS3Manager.getLatestBackupKey();
+            int restoredCount = 0;
+            
+            try (InputStream backupStream = newsBackupS3Manager.downloadNewsBackup(latestBackupKey)) {
+                if (backupStream == null) {
+                    logger.warn("최신 백업 파일이 S3에 없습니다. Key: {}", latestBackupKey);
+                    return 0;
+                }
+
+                List<NewsArticle> articlesFromBackup = objectMapper.readValue(backupStream,
+                    new TypeReference<List<NewsArticle>>() {
+                    });
+
+                if (articlesFromBackup != null && !articlesFromBackup.isEmpty()) {
+                    logger.info("최신 백업에서 {}개 기사 로드됨. Key: {}", articlesFromBackup.size(), latestBackupKey);
+                    
+                    for (NewsArticle article : articlesFromBackup) {
+                        // DB에 해당 기사가 없는지 확인 (sourceUrl 기준)
+                        if (!newsArticleRepository.existsBySourceUrl(article.getSourceUrl())) {
+                            
+                            NewsArticle newArticle = NewsArticle.builder()
+                                .sourceIn(article.getSourceIn())
+                                .sourceUrl(article.getSourceUrl())
+                                .title(article.getTitle())
+                                .publishedDate(article.getPublishedDate())
+                                .summary(article.getSummary())
+                                .viewCount(article.getViewCount())
+                                .commentCount(article.getCommentCount())
+                                .isDeleted(false) // 복구된 기사는 활성 상태
+                                .build();
+                                
+                            newsArticleRepository.save(newArticle);
+                            restoredCount++;
+                            logger.debug("복구된 기사 저장: {}", newArticle.getSourceUrl());
+                        }
+                    }
+                }
+            }
+
+            logger.info("최신 백업 복구 완료: 총 {}개 기사 복구됨. Key: {}", restoredCount, latestBackupKey);
+            return restoredCount;
+            
+        } catch (Exception e) {
+            logger.error("최신 백업 복구 중 오류 발생: {}", e.getMessage(), e);
+            throw new ArticleRestoreFailedException();
+        }
+    }
+
 
     public void backupDataByDate(LocalDate date) {
         logger.info("데이터 백업 시작: {}", date);
 
-        LocalDateTime startOfDayLocalDateTime = date.atStartOfDay();
-        LocalDateTime endOfDayLocalDateTime = date.atTime(LocalTime.MAX);
-
-        Timestamp startOfDayTimestamp = Timestamp.valueOf(startOfDayLocalDateTime);
-        Timestamp endOfDayTimestamp = Timestamp.valueOf(endOfDayLocalDateTime);
+        // 한국 시간대 기준으로 해당 날짜의 시작과 끝 시간 생성
+        Timestamp startOfDayTimestamp = DateTimeUtil.parseTimestamp(date.toString());  // 00:00:00 KST
+        Timestamp endOfDayTimestamp = DateTimeUtil.parseTimestampAsEndOfDay(date.toString());  // 23:59:59.999 KST
 
         List<NewsArticle> articlesToBackup = newsArticleRepository.findByIsDeletedFalseAndPublishedDateBetween(
             startOfDayTimestamp, endOfDayTimestamp);
@@ -449,135 +431,17 @@ public class NewsArticleService {
         }
     }
 
-    private boolean isSimpleKeywordSearch(FilterDto filterDto) {
-        return filterDto.keyword() != null && filterDto.interestId() == null && (
-            filterDto.sourceIn() == null || filterDto.sourceIn().isEmpty())
-            && filterDto.publishDateFrom() == null && filterDto.publishDateTo() == null;
-    }
 
 
     private String getFirstSource(List<String> sources) {
         return (sources != null && !sources.isEmpty()) ? sources.get(0) : null;
     }
 
-    private UUID parseCursorId(String cursor) {
-        if (cursor == null || cursor.isEmpty()) {
-            return null;
-        }
-        return UUID.fromString(cursor);
-    }
 
-    private List<NewsArticle> limitResults(List<NewsArticle> articles, int limit) {
-        if (articles.isEmpty()) {
-            return articles;
-        }
 
-        int actualLimit = Math.min(limit, articles.size());
-        return articles.subList(0, actualLimit);
-    }
 
-    @Scheduled(cron = "0 0 0 * * ?") // 매일 정각
-    public void executeDailyNewsBackupBatch() {
-        try {
-            LocalDate yesterday = LocalDate.now().minusDays(1);
-            backupDataByDate(yesterday);
-        } catch (Exception e) {
-            logger.error("일일 뉴스 백업 배치 실행 중 오류 발생: {}", e.getMessage(), e);
 
-        }
-    }
 
-    public PaginatedResponseDto<NewsArticleResponseDto> getArticlesByParams(String keyword,
-        UUID interestId, List<String> sourceIn, Timestamp publishDateFrom, Timestamp publishDateTo,
-        String orderBy, String direction, String cursor, Timestamp after, int limit,
-        String userId) {
-
-        FilterDto filterDto = new FilterDto(keyword, interestId, sourceIn, publishDateFrom,
-            publishDateTo);
-        RequestCursorDto cursorDto = new RequestCursorDto(orderBy, direction, cursor, after, null,
-            limit);
-
-        return getArticles(filterDto, cursorDto, userId);
-    }
-
-    public PaginatedResponseDto<NewsArticleResponseDto> getRecentArticles(int limit,
-        String userId) {
-        // 통합 메서드 사용: 최근 뉴스 = 날짜 내림차순 정렬
-        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(
-            null, null, null, null, "publishDate", "DESC", null, limit);
-
-        Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
-
-        List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
-                article.getId());
-            return newsArticleMapper.toDto(article,
-                viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
-        }).collect(Collectors.toList());
-
-        return PaginatedResponseDto.<NewsArticleResponseDto>builder().content(responseDtos)
-            .nextCursor(null).nextAfter(null).nextCursorViewCount(null).size(articles.size())
-            .totalElements(articles.size()).hasNext(false).build();
-    }
-
-    public PaginatedResponseDto<NewsArticleResponseDto> searchArticlesByKeyword(String keyword,
-        int limit, String userId) {
-        // 통합 메서드 사용: 키워드 검색 + 날짜 내림차순 정렬
-        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(
-            keyword, null, null, null, "publishDate", "DESC", null, limit);
-
-        logger.info("키워드 '{}' 검색 결과: {}개 기사", keyword, articles.size());
-
-        Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
-
-        List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
-                article.getId());
-            return newsArticleMapper.toDto(article,
-                viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
-        }).collect(Collectors.toList());
-
-        return PaginatedResponseDto.<NewsArticleResponseDto>builder().content(responseDtos)
-            .nextCursor(null).nextAfter(null).nextCursorViewCount(null).size(articles.size())
-            .totalElements(articles.size()).hasNext(false).build();
-    }
-
-    public PaginatedResponseDto<NewsArticleResponseDto> searchArticlesByKeywordAdvanced(
-        String keyword, String orderBy, String direction, int limit, String userId) {
-
-        // 기본값 설정
-        if (orderBy == null || orderBy.trim().isEmpty()) {
-            orderBy = "publishDate";
-        }
-        if (direction == null || direction.trim().isEmpty()) {
-            direction = "DESC";
-        }
-
-        // 빈 문자열을 null로 변환 (쿼리에서 조건 무시하도록)
-        if (keyword != null && keyword.trim().isEmpty()) {
-            keyword = null;
-        }
-
-        List<NewsArticle> articles = newsArticleRepository.findArticlesWithFiltersAndSorting(keyword,
-            null, null, null, orderBy, direction, null, limit);
-
-        logger.info("향상된 키워드 '{}' 검색 결과: {}개 기사 (정렬: {} {})", keyword, articles.size(), orderBy,
-            direction);
-
-        Map<UUID, Boolean> viewedStatusMap = Collections.emptyMap();
-
-        List<NewsArticleResponseDto> responseDtos = articles.stream().map(article -> {
-            // 실제 댓글 수 계산
-            Long actualCommentCount = commentRepository.countActiveCommentsByArticleId(
-                article.getId());
-            return newsArticleMapper.toDto(article,
-                viewedStatusMap.getOrDefault(article.getId(), false), actualCommentCount);
-        }).collect(Collectors.toList());
-
-        return PaginatedResponseDto.<NewsArticleResponseDto>builder().content(responseDtos)
-            .nextCursor(null).nextAfter(null).nextCursorViewCount(null).size(articles.size())
-            .totalElements(articles.size()).hasNext(false).build();
-    }
 
 
 }
