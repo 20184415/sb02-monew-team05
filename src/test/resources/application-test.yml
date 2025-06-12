@@ -31,4 +31,4 @@ monew:
       bucket: test-bucket
   cloud:
     slack:
-      webhook-url: https://hooks.slack.com/services/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
+      webhook-url: test-webhook-url
