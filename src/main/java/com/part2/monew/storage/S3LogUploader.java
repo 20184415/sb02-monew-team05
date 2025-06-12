@@ -51,7 +51,7 @@ public class S3LogUploader {
                 .build();
     }
 
-    @Scheduled(cron = "* * * * * *")
+    @Scheduled(cron = "0 5 0 * * *")
     public void uploadAllLogs() {
         System.out.println("S3 자동 업로드 시작: " + LocalDateTime.now());
         File logDir = new File(logDirPath);
