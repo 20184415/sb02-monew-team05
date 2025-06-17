@@ -1,0 +1,10 @@
+# ── prometheus.yml ──
+global:
+  scrape_interval:     5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'monew-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['monew-app:8080']   # alias 로 지정한 이름 사용
